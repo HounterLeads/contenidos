@@ -1,0 +1,2099 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Centro de administración de contenidos · Hounter Leads</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Inter:wght@300;400;500;600;700&family=Fraunces:ital,wght@0,400;1,400&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --navy:#050347;
+    --azul:#2025C9;
+    --peri:#6670FF;
+    --lav:#B098F0;
+    --bg:#F4F5FF;
+    --white:#FFFFFF;
+    --ink:#0B0A2E;
+    --muted:#6A6E96;
+    --line:#E2E3F5;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;min-height:100vh}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+  button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+  button{cursor:pointer}
+  a{color:inherit}
+  [hidden]{display:none!important}
+
+  /* HERO (igual al hub de parrillas) */
+  .hero{background:linear-gradient(150deg,var(--navy) 0%,#0d0a63 55%,var(--azul) 130%);color:#fff;padding:26px 24px 64px;position:relative}
+  .hero-fx{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+  .hero-fx::before{content:"";position:absolute;top:-30%;right:-8%;width:46%;height:120%;background:radial-gradient(circle,rgba(102,112,255,.45) 0%,transparent 65%);filter:blur(30px)}
+  .hero-fx::after{content:"";position:absolute;bottom:-40%;left:-6%;width:40%;height:120%;background:radial-gradient(circle,rgba(176,152,240,.30) 0%,transparent 65%);filter:blur(30px)}
+  .hero-in{position:relative;z-index:4;max-width:1080px;margin:0 auto}
+  .topbar{display:flex;align-items:center;gap:12px;margin-bottom:34px}
+  .topbar .sp{flex:1}
+  .brand-logo{font-family:'Fraunces',serif;font-style:italic;font-size:1.5rem;color:#fff;letter-spacing:-.5px;text-decoration:none}
+  .brand-logo b{font-weight:400}
+  .brand-logo span{font-weight:300;opacity:.85;font-style:normal;font-family:'Inter',sans-serif;font-size:1.1rem}
+  .user-chip{display:flex;align-items:center;gap:8px;font-size:.82rem;color:#C9CCF2}
+  .user-chip b{color:#fff;font-weight:600}
+  .icon-btn{position:relative;width:42px;height:42px;border-radius:50%;border:1px solid rgba(176,152,240,.5);background:rgba(255,255,255,.1);color:#fff;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:background .2s}
+  .icon-btn:hover{background:rgba(176,152,240,.3)}
+  .badge{position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;border-radius:50px;background:#F04438;color:#fff;font-size:.68rem;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 5px;border:2px solid var(--navy)}
+  .salir{background:none;border:1px solid rgba(176,152,240,.5);color:#fff;border-radius:50px;padding:8px 16px;font-size:.8rem;font-weight:600}
+  .salir:hover{background:rgba(176,152,240,.3)}
+  .pill{display:inline-flex;align-items:center;gap:8px;padding:7px 16px;border:1px solid rgba(176,152,240,.5);color:var(--lav);font-size:.72rem;letter-spacing:2.5px;text-transform:uppercase;border-radius:50px;margin-bottom:18px;font-weight:600}
+  .pill img{width:22px;height:22px;border-radius:50%;object-fit:contain;background:#fff;margin-left:-8px}
+  .hero h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:clamp(2rem,5vw,3.1rem);line-height:1.02;letter-spacing:-.02em;margin-bottom:14px}
+  .hero h1 em{font-family:'Fraunces',serif;font-style:italic;font-weight:400;color:var(--lav)}
+  .hero p.lead{max-width:560px;color:#C9CCF2;font-size:1.02rem;font-weight:300}
+  .navbtns{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}
+  .navbtn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:50px;font-weight:600;font-size:.9rem;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(176,152,240,.5);transition:background .25s,transform .2s;text-decoration:none}
+  .navbtn:hover{background:rgba(176,152,240,.3);transform:translateY(-2px)}
+  .navbtn.on{background:var(--lav);color:var(--navy);border-color:var(--lav)}
+  .volver{display:inline-flex;align-items:center;gap:6px;color:var(--lav);font-size:.82rem;font-weight:600;background:none;border:0;margin-bottom:14px;padding:0}
+  .volver:hover{color:#fff}
+
+  /* CAMPANITA */
+  .notif{position:absolute;top:52px;right:0;width:380px;max-width:calc(100vw - 32px);background:#fff;color:var(--ink);border-radius:18px;box-shadow:0 30px 70px rgba(5,3,71,.35);z-index:40;overflow:hidden}
+  .notif-h{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line)}
+  .notif-h b{font-family:'Bricolage Grotesque',sans-serif;font-size:1.05rem}
+  .notif-h button{border:0;background:none;color:var(--peri);font-size:.76rem;font-weight:700}
+  .notif-l{max-height:420px;overflow-y:auto}
+  .notif-i{display:flex;gap:12px;padding:12px 18px;border-bottom:1px solid var(--line);cursor:pointer;font-size:.84rem;line-height:1.4}
+  .notif-i:hover{background:var(--bg)}
+  .notif-i.nuevo{background:#F8F8FF}
+  .notif-i .ni{width:34px;height:34px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1rem}
+  .notif-i small{display:block;color:var(--muted);font-size:.74rem;margin-top:2px}
+  .n-rojo{background:#FEE4E2}.n-ambar{background:#FFF1D6}.n-azul{background:#ECEDFF}.n-verde{background:#E0F5E9}
+  .notif-vacio{padding:30px 18px;text-align:center;color:var(--muted);font-size:.86rem}
+
+  /* RESUMEN */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:-34px;position:relative;z-index:3}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:0 14px 34px rgba(32,37,201,.07)}
+  .stat b{display:block;font-family:'Bricolage Grotesque',sans-serif;font-size:1.7rem;font-weight:800;color:var(--azul);line-height:1}
+  .stat b small{font-size:1rem;color:var(--muted);font-weight:600}
+  .stat span{font-size:.78rem;color:var(--muted)}
+
+  .sec{padding:36px 0 30px}
+  .sec:last-of-type{padding-bottom:80px}
+  .sec-label{font-size:.72rem;letter-spacing:3px;text-transform:uppercase;color:var(--azul);font-weight:700;margin-bottom:18px;display:flex;align-items:center;gap:12px}
+  .sec-label::after{content:"";flex:1;height:1px;background:var(--line)}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
+  .toolbar .sp{flex:1}
+  .btn{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;border-radius:50px;font-weight:600;font-size:.85rem;background:var(--azul);color:#fff;border:1px solid var(--azul);transition:transform .2s,background .2s;text-decoration:none;white-space:nowrap}
+  .btn:hover{transform:translateY(-2px);background:var(--peri);border-color:var(--peri)}
+  .btn.ghost{background:#fff;color:var(--azul);border-color:var(--line)}
+  .btn.ghost:hover{border-color:var(--peri);background:#fff}
+  .btn.sm{padding:6px 13px;font-size:.76rem}
+  .btn.danger{background:#fff;color:#B42318;border-color:#F3C6C2}
+  .sel{padding:9px 14px;border-radius:50px;border:1px solid var(--line);background:#fff;font-size:.85rem;font-weight:500}
+  .seg{display:inline-flex;background:#fff;border:1px solid var(--line);border-radius:50px;padding:3px}
+  .seg button{border:0;background:none;padding:7px 15px;border-radius:50px;font-size:.8rem;font-weight:600;color:var(--muted)}
+  .seg button.on{background:var(--azul);color:#fff}
+
+  /* LOGOS */
+  .logo-ic{width:56px;height:56px;border-radius:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.7rem;background:#fff;border:1px solid var(--line);overflow:hidden}
+  .logo-ic img{width:100%;height:100%;object-fit:contain}
+  .mini-logo{width:20px;height:20px;border-radius:5px;object-fit:contain;background:#fff;border:1px solid var(--line);vertical-align:middle;flex-shrink:0}
+  .mini-logo.sin{display:inline-flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:800;color:var(--azul)}
+  .thumb{width:44px;height:55px;border-radius:8px;object-fit:cover;background:var(--bg);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;overflow:hidden}
+  .thumb img{width:100%;height:100%;object-fit:cover}
+  .chip-img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:5px;margin-bottom:3px;background:rgba(255,255,255,.25)}
+  .pieza-cel{display:flex;align-items:center;gap:12px}
+  .drive-marco{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden}
+  .drive-marco iframe{width:100%;height:640px;border:0;display:block}
+
+  /* CICLO (etapas) */
+  .ciclo{display:flex;align-items:flex-start;gap:0;margin:4px 0}
+  .paso{flex:1;display:flex;flex-direction:column;align-items:center;position:relative;min-width:0;background:none;border:0;padding:0;cursor:default}
+  .paso::before{content:"";position:absolute;top:13px;left:-50%;width:100%;height:3px;background:var(--line);z-index:0}
+  .paso:first-child::before{display:none}
+  .paso.hecho::before,.paso.actual::before{background:linear-gradient(90deg,var(--peri),var(--lav))}
+  .paso i{position:relative;z-index:1;width:28px;height:28px;border-radius:50%;background:#fff;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-style:normal;font-size:.8rem;color:var(--muted);font-weight:800}
+  .paso.hecho i{background:var(--peri);border-color:var(--peri);color:#fff}
+  .paso.actual i{background:var(--azul);border-color:var(--azul);color:#fff;box-shadow:0 0 0 5px rgba(32,37,201,.15)}
+  .paso span{font-size:.64rem;font-weight:600;color:var(--muted);margin-top:6px;text-align:center;line-height:1.2;padding:0 2px}
+  .paso.actual span{color:var(--azul);font-weight:800}
+  .compacto .paso span{display:none}
+  .compacto .paso.actual span{display:block;white-space:nowrap}
+  .editable .paso{cursor:pointer}
+  .editable .paso:hover i{border-color:var(--peri)}
+  .ciclo-hero{background:rgba(255,255,255,.08);border:1px solid rgba(176,152,240,.35);border-radius:18px;padding:16px 14px 12px;margin-top:24px;max-width:760px}
+  .ciclo-hero .paso::before{background:rgba(255,255,255,.18)}
+  .ciclo-hero .paso.hecho::before,.ciclo-hero .paso.actual::before{background:var(--lav)}
+  .ciclo-hero .paso i{background:transparent;border-color:rgba(255,255,255,.35);color:#C9CCF2}
+  .ciclo-hero .paso.hecho i{background:var(--lav);border-color:var(--lav);color:var(--navy)}
+  .ciclo-hero .paso.actual i{background:#fff;border-color:#fff;color:var(--azul);box-shadow:0 0 0 5px rgba(176,152,240,.35)}
+  .ciclo-hero .paso span{color:#C9CCF2}
+  .ciclo-hero .paso.actual span{color:#fff}
+  .ciclo-t{font-size:.66rem;letter-spacing:2px;text-transform:uppercase;font-weight:700;color:var(--lav);margin:0 0 10px 6px}
+
+  /* TARJETAS DE MARCA (inicio) */
+  .marcas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+  .mcard{background:#fff;border:1px solid var(--line);border-radius:20px;padding:20px;transition:box-shadow .3s,border-color .3s;display:flex;flex-direction:column;gap:14px}
+  .mcard:hover{box-shadow:0 22px 50px rgba(32,37,201,.10);border-color:var(--peri)}
+  .mcard-h{display:flex;align-items:center;gap:14px}
+  .mcard-h h3{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:1.2rem;line-height:1.1}
+  .mcard-h p{font-size:.8rem;color:var(--muted)}
+  .mcard-h .sp{flex:1;min-width:0}
+  .alerta-n{font-size:.7rem;font-weight:700;background:#FEE4E2;color:#B42318;padding:4px 10px;border-radius:50px;white-space:nowrap}
+  .mcard-m{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);font-weight:600}
+  .mcard-m b{color:var(--ink)}
+  .barra{height:7px;border-radius:7px;background:var(--line);overflow:hidden}
+  .barra i{display:block;height:100%;background:linear-gradient(90deg,var(--peri),var(--lav))}
+  .mcard .btn{justify-content:center}
+
+  /* PLANEADOR DEL MES (inicio) */
+  .plan-h{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+  .plan-h h3{font-family:'Bricolage Grotesque',sans-serif;font-size:1.5rem;font-weight:800;min-width:210px}
+  .tabla{width:100%;border-collapse:separate;border-spacing:0 7px}
+  .tabla th{font-size:.62rem;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);font-weight:700;text-align:left;padding:2px 12px}
+  .tabla td{background:#fff;padding:11px 12px;font-size:.85rem;vertical-align:middle;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .tabla tr td:first-child{border-radius:12px 0 0 12px;border-left:1px solid var(--line)}
+  .tabla tr td:last-child{border-radius:0 12px 12px 0;border-right:1px solid var(--line)}
+  .tabla tbody tr{cursor:pointer}
+  .tabla tbody tr:hover td{background:#F8F8FF;border-color:var(--peri)}
+  .tabla .tit{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:.95rem}
+  .tabla .num{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;color:var(--azul)}
+  .tabla .fecha{white-space:nowrap;color:var(--muted);font-size:.8rem}
+  .tabla .fecha b{color:var(--ink);font-size:.86rem}
+  .tabla .mk{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;font-weight:600}
+  .falta{display:inline-block;font-size:.66rem;font-weight:700;padding:2px 8px;border-radius:50px;background:#FEE4E2;color:#B42318;margin:1px 2px 1px 0}
+  .ok-prog{font-size:.74rem;font-weight:700;color:#1C7A47}
+
+  /* ESTADOS */
+  .estado{font-size:.6rem;letter-spacing:1px;text-transform:uppercase;font-weight:700;padding:3px 9px;border-radius:50px;white-space:nowrap;display:inline-block}
+  .e-idea{background:#EEF0F5;color:#6A6E96}
+  .e-guion{background:#ECEDFF;color:#2025C9}
+  .e-grabacion{background:#F1E9FF;color:#6B3FC4}
+  .e-edicion{background:#E3F2FF;color:#1663A8}
+  .e-revision{background:#FFF1D6;color:#9A6A12}
+  .e-aprobada{background:#E0F5E9;color:#1C7A47}
+  .e-programada{background:#DDF3F7;color:#0E7490}
+  .e-publicada{background:#0B0A2E;color:#fff}
+  .tarde{font-size:.68rem;color:#B42318;font-weight:700}
+  .drive{display:inline-flex;align-items:center;gap:5px;font-size:.74rem;font-weight:700;color:#1C7A47;background:#E0F5E9;padding:5px 11px;border-radius:50px;text-decoration:none;white-space:nowrap}
+  .drive:hover{background:#C9EDD8}
+  .sin-drive{font-size:.72rem;color:var(--muted)}
+  .vacio{text-align:center;color:var(--muted);font-size:.88rem;padding:22px;border:1px dashed var(--line);border-radius:13px;margin-top:10px;background:#fff}
+
+  /* PARRILLA: proyectos (sub-acordeón del hub) */
+  .subgrp{background:#fff;border:1px solid var(--line);border-radius:16px;margin-top:12px;overflow:hidden;transition:border-color .25s,box-shadow .25s}
+  .subgrp.open{border-color:var(--peri);box-shadow:0 18px 40px rgba(32,37,201,.08)}
+  .subgrp-head{display:flex;align-items:center;gap:14px;padding:18px 20px;cursor:pointer;user-select:none}
+  .subgrp-ic{width:44px;height:44px;border-radius:11px;background:var(--bg);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0}
+  .subgrp-info{flex:1;min-width:0}
+  .subgrp-info h4{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:1.08rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .subgrp-info p{font-size:.8rem;color:var(--muted)}
+  .subgrp-info .barra{max-width:240px;margin-top:6px;height:6px}
+  .chevron{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--azul);transition:transform .3s,background .3s;flex-shrink:0;font-size:.9rem}
+  .subgrp.open .chevron{transform:rotate(180deg);background:var(--azul);color:#fff;border-color:var(--azul)}
+  .subgrp-body{display:none;padding:0 18px 18px}
+  .subgrp.open .subgrp-body{display:block}
+  .proy-acc{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+  .subgrp .tabla td{background:var(--bg);border-color:transparent}
+  .subgrp .tabla tr td:first-child,.subgrp .tabla tr td:last-child{border-color:transparent}
+  .subgrp .tabla tbody tr:hover td{background:#ECEDFF;border-color:transparent}
+
+  /* PLANIFICADOR — agenda */
+  .semana-t{font-family:'Bricolage Grotesque',sans-serif;font-size:.72rem;letter-spacing:1.6px;text-transform:uppercase;font-weight:700;color:var(--azul);margin:24px 2px 10px}
+  .post{display:flex;gap:18px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:12px;transition:box-shadow .3s,border-color .3s}
+  .post:hover{border-color:var(--peri);box-shadow:0 18px 40px rgba(32,37,201,.08)}
+  .post-fecha{width:78px;flex-shrink:0;text-align:center;border-radius:14px;padding:10px 4px;color:#fff;align-self:flex-start}
+  .post-fecha .dsem{font-size:.66rem;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;opacity:.85}
+  .post-fecha .dnum{font-family:'Bricolage Grotesque',sans-serif;font-size:2rem;font-weight:800;line-height:1}
+  .post-fecha .hora{font-size:.74rem;font-weight:700;margin-top:4px;background:rgba(255,255,255,.2);border-radius:50px;padding:2px 0}
+  .post-cuerpo{flex:1;min-width:0}
+  .post-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.76rem;color:var(--muted);font-weight:600}
+  .post h4{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:1.12rem;margin:4px 0 8px;line-height:1.2}
+  .copy{background:var(--bg);border-radius:12px;padding:12px 14px;font-size:.88rem;white-space:pre-wrap;word-wrap:break-word;max-height:7.4em;overflow:hidden}
+  .copy.abierto{max-height:none}
+  .copy.vacio-copy{color:var(--muted);font-style:italic}
+  .mas{font-size:.76rem;font-weight:700;color:var(--peri);background:none;border:0;margin-top:4px}
+  .post-acc{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+  .post-mini{width:96px;flex-shrink:0;aspect-ratio:4/5;border-radius:12px;overflow:hidden;background:var(--bg);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:1.8rem;align-self:flex-start}
+  .post-mini iframe{width:100%;height:100%;border:0;pointer-events:none}
+
+  /* PLANIFICADOR — mes */
+  .cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+  .cal .dn{font-size:.68rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-weight:700;text-align:center;padding:4px 0}
+  .dia{background:#fff;border:1px solid var(--line);border-radius:12px;min-height:108px;padding:7px}
+  .dia.fuera{opacity:.35}
+  .dia.hoy{border-color:var(--azul);box-shadow:0 0 0 2px rgba(32,37,201,.15)}
+  .dia .n{font-size:.75rem;font-weight:700;color:var(--muted)}
+  .dia.hoy .n{color:var(--azul)}
+  .chip{display:block;font-size:.7rem;font-weight:600;padding:3px 7px;border-radius:7px;margin-top:4px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}
+  .chip b{font-weight:800;opacity:.85;margin-right:3px}
+  .chip.grab{background:#fff!important;border:1.5px dashed;color:var(--ink)}
+  .leyenda{display:flex;gap:16px;flex-wrap:wrap;font-size:.78rem;color:var(--muted);margin-top:14px}
+
+  /* TAREAS (lista tipo ClickUp) */
+  .tgrupo{margin-top:16px}
+  .tgrupo:first-child{margin-top:0}
+  .tgrupo-h{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .tgrupo-h .estado{font-size:.64rem}
+  .tgrupo-h small{font-size:.74rem;color:var(--muted);font-weight:600}
+  .tcab{display:grid;grid-template-columns:28px 1fr 130px 92px 96px;gap:10px;font-size:.62rem;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted);font-weight:700;padding:0 12px 4px}
+  .tarea{display:grid;grid-template-columns:28px 1fr 130px 92px 96px;gap:10px;align-items:center;background:#fff;border:1px solid var(--line);border-left:3px solid var(--line);border-radius:10px;padding:9px 12px;margin-bottom:5px;cursor:pointer;transition:border-color .2s,box-shadow .2s}
+  .tarea:hover{border-color:var(--peri);box-shadow:0 6px 16px rgba(32,37,201,.07)}
+  .tarea.hecha .t-tit{text-decoration:line-through;color:var(--muted)}
+  .check{width:20px;height:20px;border-radius:50%;border:2px solid #C5C8E6;background:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#fff;padding:0;flex-shrink:0}
+  .check:hover{border-color:#1C7A47}
+  .check.ok{background:#1C7A47;border-color:#1C7A47}
+  .check.curso{border-color:var(--azul);background:radial-gradient(circle,var(--azul) 35%,#fff 40%)}
+  body.cliente .tarea .check{pointer-events:none}
+  .t-tit{font-weight:600;font-size:.88rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:6px}
+  .t-tit small{font-weight:500;color:var(--muted);font-size:.74rem}
+  .t-resp{display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--muted);min-width:0;white-space:nowrap;overflow:hidden}
+  .avatar{width:24px;height:24px;border-radius:50%;background:var(--lav);color:var(--navy);font-size:.66rem;font-weight:800;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+  .t-fecha{font-size:.78rem;color:var(--muted);white-space:nowrap}
+  .t-fecha.vencida{color:#B42318;font-weight:700}
+  .t-fecha.hoyt{color:#9A6A12;font-weight:700}
+  .prio{font-size:.72rem;font-weight:700;white-space:nowrap}
+  .p-urgente{color:#B42318}.p-alta{color:#D97706}.p-normal{color:var(--azul)}.p-baja{color:#9AA0BF}
+  .tarea.p-urgente-b{border-left-color:#B42318}.tarea.p-alta-b{border-left-color:#D97706}.tarea.p-normal-b{border-left-color:var(--peri)}.tarea.p-baja-b{border-left-color:#C5C8E6}
+  .privada{font-size:.62rem;font-weight:700;color:var(--muted);background:var(--bg);border:1px solid var(--line);padding:1px 7px;border-radius:50px}
+  .rapida{display:flex;gap:8px;margin-top:8px}
+  .rapida input{flex:1;border:1px dashed #C5C8E6;border-radius:10px;padding:9px 12px;background:transparent;font-size:.86rem;outline:none}
+  .rapida input:focus{border-style:solid;border-color:var(--peri);background:#fff}
+  .subs{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+  .subt{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:9px;padding:7px 10px;font-size:.88rem}
+  .subt span{flex:1}
+  .subt.ok span{text-decoration:line-through;color:var(--muted)}
+  .subt .x{border:0;background:none;color:var(--muted);font-size:1rem;padding:0 4px}
+
+
+  /* TIEMPOS (acuerdo de entrega) */
+  .sla-est{display:flex;align-items:center;gap:10px;border-radius:12px;padding:10px 14px;font-size:.86rem;font-weight:600;margin-bottom:12px}
+  .sla-est.azul{background:#ECEDFF;color:var(--azul)}.sla-est.ambar{background:#FFF1D6;color:#9A6A12}.sla-est.rojo{background:#FEE4E2;color:#B42318}.sla-est.verde{background:#E0F5E9;color:#1C7A47}.sla-est.gris{background:var(--bg);color:var(--muted)}
+  .sla-mini{display:inline-block;font-size:.72rem;font-weight:700;padding:3px 9px;border-radius:50px;white-space:nowrap}
+  .sla-mini.azul{background:#ECEDFF;color:var(--azul)}.sla-mini.ambar{background:#FFF1D6;color:#9A6A12}.sla-mini.rojo{background:#FEE4E2;color:#B42318}.sla-mini.verde{background:#E0F5E9;color:#1C7A47}.sla-mini.gris{background:var(--bg);color:var(--muted)}
+  .hist{position:relative;margin:4px 0 12px;padding-left:22px}
+  .hist::before{content:"";position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:var(--line)}
+  .hev{position:relative;padding:0 0 12px}
+  .hev::before{content:"";position:absolute;left:-19px;top:5px;width:12px;height:12px;border-radius:50%;background:#fff;border:2px solid var(--peri)}
+  .hev.limite::before{border-style:dashed;border-color:var(--muted)}
+  .hev.ok::before{background:#1C7A47;border-color:#1C7A47}.hev.mal::before{background:#B42318;border-color:#B42318}
+  .hev b{font-size:.86rem}
+  .hev .hf{font-size:.76rem;color:var(--muted)}
+  .hev .hn{font-size:.8rem;margin-top:2px;white-space:pre-wrap}
+  .hev .hc{font-size:.74rem;font-weight:700;margin-top:2px}
+  .hev .hc.ok{color:#1C7A47}.hev .hc.mal{color:#B42318}.hev .hc.info{color:var(--azul)}
+  .hev .hx{position:absolute;right:0;top:0;border:0;background:none;color:var(--muted);font-size:1rem}
+  .registrar{display:grid;grid-template-columns:1.3fr 1fr;gap:8px;background:var(--bg);border-radius:12px;padding:12px;margin-bottom:12px}
+  .registrar select,.registrar input,.registrar textarea{border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:#fff;font-size:.84rem;width:100%}
+  .registrar textarea{grid-column:1/-1;min-height:54px;resize:vertical}
+  .registrar .btn{grid-column:1/-1;justify-content:center}
+  .reglas{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px 24px;margin-bottom:16px}
+  .reglas h3{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:1.15rem;margin-bottom:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .reglas h4{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:.98rem;margin:14px 0 4px;color:var(--azul)}
+  .reglas p,.reglas li{font-size:.9rem;line-height:1.6}
+  .reglas ul{padding-left:20px;margin:4px 0}
+  .reglas li{margin-bottom:4px}
+  .reglas .nota{font-size:.78rem;color:var(--muted);margin-top:10px}
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+  .kpi{background:var(--bg);border-radius:12px;padding:12px 14px}
+  .kpi b{display:block;font-family:'Bricolage Grotesque',sans-serif;font-size:1.4rem;font-weight:800;color:var(--azul);line-height:1.1}
+  .kpi span{font-size:.76rem;color:var(--muted)}
+  @media(max-width:760px){.kpis{grid-template-columns:1fr}.registrar{grid-template-columns:1fr}}
+
+
+  /* MÉTRICAS */
+  .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+  .kpi2{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px}
+  .kpi2 b{display:block;font-family:'Bricolage Grotesque',sans-serif;font-size:1.75rem;font-weight:800;color:var(--ink);line-height:1.1}
+  .kpi2 span{font-size:.78rem;color:var(--muted)}
+  .var{font-size:.72rem;font-weight:700;margin-left:6px;white-space:nowrap}
+  .var.sube{color:#1C7A47}.var.baja{color:#B42318}.var.igual{color:var(--muted)}
+  .met-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px 22px}
+  .panel h3{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:1.08rem;margin-bottom:4px}
+  .panel .ayuda{font-size:.78rem;color:var(--muted);margin-bottom:14px}
+  .barras{display:flex;flex-direction:column;gap:9px}
+  .bar-f{display:grid;grid-template-columns:110px 1fr 64px;gap:10px;align-items:center;font-size:.82rem;position:relative}
+  .bar-f .lab{color:var(--ink);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bar-f .pista{height:14px;border-radius:0 4px 4px 0;background:var(--bg);position:relative}
+  .bar-f .pista i{display:block;height:100%;border-radius:0 4px 4px 0;background:var(--peri);min-width:2px}
+  .bar-f.top .pista i{background:var(--azul)}
+  .bar-f .val{text-align:right;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+  .bar-f:hover .pista i{background:var(--azul)}
+  .bar-f .tip{display:none;position:absolute;left:120px;top:-34px;background:var(--navy);color:#fff;font-size:.74rem;padding:5px 10px;border-radius:8px;white-space:nowrap;z-index:5;pointer-events:none}
+  .bar-f:hover .tip{display:block}
+  .oport{display:flex;flex-direction:column;gap:10px}
+  .op{display:flex;gap:12px;align-items:flex-start;background:var(--bg);border-radius:12px;padding:12px 14px;font-size:.86rem;line-height:1.5}
+  .op .oi{font-size:1.1rem;flex-shrink:0}
+  .op b{color:var(--ink)}
+  .met-tabla td{font-variant-numeric:tabular-nums}
+  .met-tabla .n{text-align:right;white-space:nowrap}
+  .met-tabla th.n{text-align:right}
+  .resultado{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0 12px}
+  .resultado div{background:var(--bg);border-radius:10px;padding:8px 10px}
+  .resultado b{display:block;font-family:'Bricolage Grotesque',sans-serif;font-size:1.1rem}
+  .resultado span{font-size:.7rem;color:var(--muted)}
+  @media(max-width:760px){.kpi-grid{grid-template-columns:1fr 1fr}.met-grid{grid-template-columns:1fr}.bar-f{grid-template-columns:80px 1fr 54px}.resultado{grid-template-columns:1fr 1fr}}
+
+  /* ADICIONAL (fuera del presupuesto) */
+  .adic{display:inline-block;font-size:.58rem;letter-spacing:1.2px;text-transform:uppercase;font-weight:800;color:#fff;background:#D97706;padding:3px 8px;border-radius:6px;white-space:nowrap;vertical-align:middle}
+  .stat span.adic{color:#fff;font-size:.58rem}
+  .uso{display:inline-block;font-size:.6rem;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:#7C3AED;background:#F1E9FF;padding:2px 7px;border-radius:50px;white-space:nowrap}
+  .post{position:relative}
+  .post .adic{position:absolute;top:-1px;right:18px;border-radius:0 0 8px 8px;padding:4px 10px}
+  .tabla tr.es-adic td:first-child{box-shadow:inset 4px 0 0 #D97706}
+  .chip.es-adic{outline:2px solid #D97706;outline-offset:-2px}
+
+  /* LOGIN */
+  .btn-google{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:13px;border:1.5px solid #DADCE0;border-radius:12px;background:#fff;color:#1F1F1F;font:600 .95rem Inter,sans-serif;cursor:pointer;margin-bottom:16px}
+  .btn-google:hover{background:#F6F8FF;border-color:var(--peri)}
+  .login-o{display:flex;align-items:center;gap:10px;margin:0 0 14px;color:var(--muted);font-size:.78rem}
+  .login-o::before,.login-o::after{content:'';flex:1;height:1px;background:#E3E4F0}
+  .login-olvido{display:block;margin:14px auto 0;background:none;border:0;color:var(--muted);font:inherit;font-size:.82rem;text-decoration:underline;cursor:pointer}
+  .cargando{position:fixed;inset:0;display:grid;place-items:center;background:var(--bg);z-index:50;font-weight:600;color:var(--muted)}
+  .login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(150deg,var(--navy) 0%,#0d0a63 55%,var(--azul) 130%);position:relative;overflow:hidden}
+  .login::before{content:"";position:absolute;top:-20%;right:-10%;width:55%;height:110%;background:radial-gradient(circle,rgba(102,112,255,.45) 0%,transparent 65%);filter:blur(30px)}
+  .login::after{content:"";position:absolute;bottom:-30%;left:-10%;width:50%;height:110%;background:radial-gradient(circle,rgba(176,152,240,.30) 0%,transparent 65%);filter:blur(30px)}
+  .login-card{position:relative;z-index:2;background:#fff;border-radius:24px;padding:38px 34px;width:100%;max-width:420px;box-shadow:0 40px 90px rgba(0,0,0,.35)}
+  .login-card .brand-logo{color:var(--navy);font-size:1.4rem}
+  .login-card .brand-logo span{color:var(--muted)}
+  .login-card h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:1.9rem;line-height:1.05;margin:22px 0 6px}
+  .login-card h1 em{font-family:'Fraunces',serif;font-style:italic;font-weight:400;color:var(--peri)}
+  .login-card p{color:var(--muted);font-size:.88rem;margin-bottom:22px}
+  .login-card .btn{width:100%;justify-content:center;padding:13px;font-size:.95rem;margin-top:6px}
+  .login-err{color:#B42318;font-size:.82rem;font-weight:600;min-height:1.2em;margin-top:8px;text-align:center}
+
+  /* MODALES */
+  .modal-bg{position:fixed;inset:0;background:rgba(5,3,71,.55);backdrop-filter:blur(4px);display:none;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto;z-index:50}
+  .modal-bg.on{display:flex}
+  .modal{background:#fff;border-radius:20px;width:100%;max-width:680px;padding:28px;box-shadow:0 30px 80px rgba(5,3,71,.35)}
+  .modal.ancho{max-width:880px}
+  .modal h2{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:1.5rem;margin-bottom:4px;line-height:1.15}
+  .modal .sub{color:var(--muted);font-size:.85rem;margin-bottom:18px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  .campo{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+  .campo label{font-size:.7rem;letter-spacing:1.4px;text-transform:uppercase;font-weight:700;color:var(--azul)}
+  .campo input,.campo select,.campo textarea{border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:var(--bg);font-size:.9rem;outline:none;width:100%}
+  .campo input:focus,.campo select:focus,.campo textarea:focus{border-color:var(--peri);background:#fff}
+  .campo textarea{min-height:84px;resize:vertical}
+  .campo small{font-size:.74rem;color:var(--muted)}
+  .campo.check-l{flex-direction:row;align-items:center;gap:8px}
+  .campo.check-l input{width:auto}
+  .campo.check-l label{text-transform:none;letter-spacing:0;font-size:.86rem;color:var(--ink);font-weight:500}
+  .modal-acc{display:flex;gap:10px;justify-content:flex-end;margin-top:8px;flex-wrap:wrap}
+  .modal-acc .sp{flex:1}
+  .colores{display:flex;gap:8px;flex-wrap:wrap}
+  .colores button{width:30px;height:30px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px var(--line)}
+  .colores button.on{box-shadow:0 0 0 2px var(--azul)}
+  .ver-grid{display:grid;grid-template-columns:300px 1fr;gap:22px}
+  .ver-media{aspect-ratio:9/16;border-radius:14px;overflow:hidden;background:var(--bg);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-size:.85rem}
+  .ver-media iframe{width:100%;height:100%;border:0}
+  .ver-dato{font-size:.85rem;margin-bottom:6px}
+  .ver-dato b{color:var(--azul);font-size:.7rem;letter-spacing:1.3px;text-transform:uppercase;margin-right:6px}
+  .usuarios{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+  .usr{display:flex;align-items:center;gap:12px;background:var(--bg);border-radius:12px;padding:10px 14px;font-size:.86rem}
+  .usr .sp{flex:1;min-width:0}
+  .usr small{display:block;color:var(--muted);font-size:.74rem}
+  .rol{font-size:.62rem;letter-spacing:1px;text-transform:uppercase;font-weight:700;padding:3px 9px;border-radius:50px;background:#ECEDFF;color:var(--azul)}
+  .rol.cli{background:#E0F5E9;color:#1C7A47}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(90px);background:var(--navy);color:#fff;padding:11px 20px;border-radius:50px;font-size:.85rem;font-weight:600;transition:transform .3s;z-index:60}
+  .toast.on{transform:translateX(-50%) translateY(0)}
+  footer{text-align:center;padding:40px 24px;color:var(--muted);font-size:.82rem;border-top:1px solid var(--line)}
+  footer b{font-family:'Fraunces',serif;font-style:italic;color:var(--azul);font-weight:400}
+
+  /* Cliente: solo lectura */
+  body.cliente .solo-equipo{display:none!important}
+
+  @media(max-width:760px){
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .grid2,.grid3,.ver-grid{grid-template-columns:1fr}
+    .ver-media{max-width:280px;margin:0 auto;width:100%}
+    .col-opc{display:none}
+    .user-chip span{display:none}
+    .marcas-grid{grid-template-columns:1fr}
+    .paso span{display:none}
+    .paso.actual span{display:block;white-space:nowrap;font-size:.66rem}
+    .post{gap:12px;padding:14px}
+    .post-fecha{width:64px}
+    .post-fecha .dnum{font-size:1.6rem}
+    .post-fecha .hora{font-size:.64rem}
+    .post-mini{display:none}
+    .dia{min-height:66px;padding:4px}
+    .chip{font-size:.58rem;padding:2px 4px}
+    .tcab{display:none}
+    .tarea{grid-template-columns:24px 1fr auto}
+    .tarea .t-resp,.tarea .prio{display:none}
+    .modal{padding:20px}
+  }
+</style>
+</head>
+<body>
+
+<div class="cargando" id="cargando">Cargando…</div>
+
+<!-- ═══ LOGIN ═══ -->
+<section class="login" id="pLogin" hidden>
+  <form class="login-card" onsubmit="event.preventDefault();entrar()">
+    <span class="brand-logo"><b>Hounter</b> <span>leads</span></span>
+    <h1>Centro de <em>contenidos</em></h1>
+    <p>Ingresa con tu cuenta de Google o con tu correo y contraseña.</p>
+    <button type="button" class="btn-google" id="lGoogle" onclick="entrarGoogle()"><svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg> Entrar con Google</button>
+    <div class="login-o"><span>o con correo</span></div>
+    <div class="campo"><label>Correo</label><input id="lUsuario" type="email" autocomplete="username" autocapitalize="none"></div>
+    <div class="campo"><label>Contraseña</label><input id="lClave" type="password" autocomplete="current-password"></div>
+    <button class="btn" type="submit" id="lBtn">Entrar</button>
+    <div class="login-err" id="lError"></div>
+    <button type="button" class="login-olvido" onclick="olvideClave()">¿Olvidaste tu contraseña?</button>
+  </form>
+</section>
+
+<!-- ═══ APP ═══ -->
+<div id="pApp" hidden>
+  <header class="hero">
+    <div class="hero-fx"></div>
+    <div class="hero-in">
+      <div class="topbar">
+        <a class="brand-logo" href="#/inicio" id="logoLink"><b>Hounter</b> <span>leads</span></a>
+        <span class="sp"></span>
+        <span class="user-chip"><span>Hola, <b id="uNombre"></b></span></span>
+        <div style="position:relative">
+          <button class="icon-btn" id="btnCampana" title="Notificaciones" onclick="toggleCampana(event)">🔔<span class="badge" id="campanaN" hidden></span></button>
+          <div class="notif" id="panelCampana" hidden>
+            <div class="notif-h"><b>Notificaciones</b><button onclick="marcarVistas()">Marcar como vistas</button></div>
+            <div class="notif-l" id="listaCampana"></div>
+          </div>
+        </div>
+        <button class="icon-btn solo-admin" title="Usuarios y accesos" onclick="abrirUsuarios()">👥</button>
+        <button class="salir" onclick="salir()">Salir</button>
+      </div>
+      <div id="heroCuerpo"></div>
+    </div>
+  </header>
+  <div class="wrap"><div class="stats" id="stats"></div></div>
+  <main id="contenido"></main>
+  <footer>Hecho con <b>cariño</b> por Hounter Leads · <span id="anio"></span></footer>
+</div>
+
+<!-- MODAL PIEZA (editar) -->
+<div class="modal-bg" id="mPieza">
+  <div class="modal">
+    <h2 id="mpTitulo">Nueva pieza</h2>
+    <p class="sub">Con fecha y hora de publicación aparece en el planificador.</p>
+    <div class="campo"><label>Título de la pieza</label><input id="pTitulo" placeholder="Ej: Invitación karaoke de Halloween"></div>
+    <div class="grid2">
+      <div class="campo"><label>Marca</label><select id="pMarca"></select></div>
+      <div class="campo" id="pProyectoC"><label>Parrilla o proyecto</label><select id="pProyecto"></select></div>
+      <div class="campo"><label>Formato</label><select id="pFormato"></select></div>
+      <div class="campo"><label>Estado</label><select id="pEstado"></select></div>
+    </div>
+    <div class="grid3">
+      <div class="campo"><label>Publicación · día</label><input type="date" id="pPub"></div>
+      <div class="campo"><label>Publicación · hora</label><input type="time" id="pHora"></div>
+      <div class="campo"><label>Red</label><select id="pRed"><option>Instagram</option><option>TikTok</option><option>Instagram + TikTok</option><option>Facebook</option><option>Instagram + Facebook</option><option>Todas</option></select></div>
+      <div class="campo"><label>Solicitada el</label><input type="date" id="pSol"></div>
+      <div class="campo"><label>Grabación</label><input type="date" id="pGrab"></div>
+      <div class="campo"><label>Responsable</label><input id="pResp" list="responsables" placeholder="Ej: Valentina"></div>
+      <div class="campo"><label>Uso</label><select id="pUso" onchange="if(this.value!=='Orgánico')$('pAdic').checked=true"><option>Orgánico</option><option>Pauta</option><option>Orgánico + pauta</option></select></div>
+    </div>
+    <div class="campo check-l" id="pAdicC"><input type="checkbox" id="pAdic"><label for="pAdic"><b>ADICIONAL</b> · fuera del presupuesto del plan (se cobra aparte)</label></div>
+    <div class="grid3" hidden>
+    </div>
+    <datalist id="responsables"></datalist>
+    <div class="campo"><label>Copy de publicación</label><textarea id="pCopy" style="min-height:120px" placeholder="El texto exacto que sale con la publicación"></textarea></div>
+    <div class="campo"><label>Pieza final · link de Drive</label><input id="pFinal" placeholder="https://drive.google.com/file/d/…"><small>Comparte el archivo como “cualquier persona con el enlace” para que se vea aquí mismo.</small></div>
+    <div class="grid2">
+      <div class="campo"><label>Guion / idea (interno)</label><textarea id="pGuion"></textarea></div>
+      <div class="campo"><label>Comentarios y ajustes</label><textarea id="pNotas"></textarea></div>
+    </div>
+    <div class="campo"><label>Referencia (link)</label><input id="pRef" placeholder="https://"></div>
+    <div class="modal-acc">
+      <button class="btn danger" id="pBorrar" onclick="borrarPieza()">Eliminar</button>
+      <span class="sp"></span>
+      <button class="btn ghost" onclick="cerrar('mPieza')">Cancelar</button>
+      <button class="btn" onclick="guardarPieza()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL VER PIEZA (equipo y cliente) -->
+<div class="modal-bg" id="mVer">
+  <div class="modal ancho">
+    <div class="ver-grid">
+      <div class="ver-media" id="vMedia"></div>
+      <div>
+        <div class="post-top" id="vTop"></div>
+        <h2 id="vTitulo"></h2>
+        <p class="sub" id="vCuando"></p>
+        <div class="campo"><label>Copy</label><div class="copy abierto" id="vCopy"></div></div>
+        <div id="vDatos"></div>
+        <div id="vResultados"></div>
+        <div id="vTiempos"></div>
+        <div class="modal-acc">
+          <a class="btn ghost" id="vDrive" target="_blank" rel="noopener">Abrir en Drive ↗</a>
+          <button class="btn ghost" onclick="copiarCopy()">📋 Copiar copy</button>
+          <span class="sp"></span>
+          <button class="btn solo-equipo" onclick="cerrar('mVer');abrirPieza(verId)">✎ Editar</button>
+          <button class="btn ghost" onclick="cerrar('mVer')">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TAREA -->
+<div class="modal-bg" id="mTarea">
+  <div class="modal">
+    <h2 id="mtTitulo">Nueva tarea</h2>
+    <p class="sub" id="mtSub"></p>
+    <div class="campo"><label>Tarea</label><input id="tTitulo" placeholder="Ej: Enviar fotos del menú"></div>
+    <div class="grid3">
+      <div class="campo"><label>Marca</label><select id="tMarca"></select></div>
+      <div class="campo"><label>Estado</label><select id="tEstado"></select></div>
+      <div class="campo"><label>Prioridad</label><select id="tPrio"></select></div>
+      <div class="campo"><label>Responsable</label><input id="tResp" list="responsables" placeholder="Ej: Valentina"></div>
+      <div class="campo"><label>Fecha límite</label><input type="date" id="tVence"></div>
+      <div class="campo"><label>Pieza relacionada</label><select id="tPieza"></select></div>
+    </div>
+    <div class="campo"><label>Checklist</label>
+      <div class="subs" id="tSubs"></div>
+      <div class="rapida solo-equipo" style="margin-top:0"><input id="tSubNueva" placeholder="+ Agregar ítem y Enter"></div>
+    </div>
+    <div class="campo"><label>Notas</label><textarea id="tNotas"></textarea></div>
+    <div class="campo check-l solo-equipo"><input type="checkbox" id="tPrivada"><label for="tPrivada">Solo equipo: el cliente no ve esta tarea</label></div>
+    <div class="modal-acc">
+      <button class="btn danger solo-equipo" id="tBorrar" onclick="borrarTarea()">Eliminar</button>
+      <span class="sp"></span>
+      <button class="btn ghost" onclick="cerrar('mTarea')">Cerrar</button>
+      <button class="btn solo-equipo" onclick="guardarTarea()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PROYECTO -->
+<div class="modal-bg" id="mProyecto">
+  <div class="modal">
+    <h2 id="mprTitulo">Nuevo proyecto</h2>
+    <p class="sub" id="mprSub"></p>
+    <div class="campo"><label>Nombre del proyecto</label><input id="prNombre" placeholder="Ej: Parrilla noviembre 2026"></div>
+    <div class="grid2">
+      <div class="campo"><label>Tipo</label><select id="prTipo"><option>Parrilla mensual</option><option>Evento</option><option>Lanzamiento</option><option>Jornada de grabación</option><option>Otro</option></select></div>
+      <div class="campo"><label>Estado</label><select id="prEstado"><option value="activo">Activo</option><option value="cerrado">Cerrado</option></select></div>
+      <div class="campo"><label>Piezas incluidas</label><input type="number" min="0" id="prCupo"></div>
+      <div class="campo"><label>Carpeta de Drive del proyecto</label><input id="prDrive" placeholder="https://drive.google.com/drive/folders/…"></div>
+    </div>
+    <div class="campo"><label>Parrilla o estrategia (link, opcional)</label><input id="prLink" placeholder="https://hounterleads.github.io/Parrillas/…"></div>
+    <div class="modal-acc">
+      <button class="btn danger" id="prBorrar" onclick="borrarProyecto()">Eliminar</button>
+      <span class="sp"></span>
+      <button class="btn ghost" onclick="cerrar('mProyecto')">Cancelar</button>
+      <button class="btn" onclick="guardarProyecto()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MARCA -->
+<div class="modal-bg" id="mMarca">
+  <div class="modal">
+    <h2 id="mmTitulo">Nueva marca</h2>
+    <p class="sub">Aparece en el centro de administración con su propio dashboard.</p>
+    <div class="grid2">
+      <div class="campo"><label>Nombre</label><input id="mNombre"></div>
+      <div class="campo"><label>Sector</label><input id="mSector" placeholder="Ej: Bar rock"></div>
+      <div class="campo"><label>Mes del ciclo</label><input type="month" id="mMes"></div>
+      <div class="campo"><label>Publicaciones al mes</label><input type="number" min="0" id="mCupo"></div>
+      <div class="campo"><label>Forma de trabajo</label><select id="mModo"><option value="parrilla">Por parrilla mensual</option><option value="solicitudes">Por solicitudes</option></select></div>
+    </div>
+    <div class="campo"><label>Logo</label><input id="mLogo" placeholder="logos/marca.png o link de la imagen"><small>Guarda el logo en la carpeta logos y escribe su nombre, o pega el link de la imagen.</small></div>
+    <div class="campo"><label>Carpeta de Drive · contenido editado</label><input id="mDrive" placeholder="https://drive.google.com/drive/folders/…"><small>Compártela como “cualquier persona con el enlace puede ver”. Se muestra en la pestaña Contenido de la marca.</small></div>
+    <div class="campo check-l"><input type="checkbox" id="mSla" onchange="$('mSlaC').hidden=!this.checked"><label for="mSla">Esta marca tiene acuerdo de tiempos de entrega (historial por pieza)</label></div>
+    <div class="grid2" id="mSlaC" hidden>
+      <div class="campo"><label>Primera entrega · días hábiles después de grabar</label><input type="number" min="1" id="mSlaE"></div>
+      <div class="campo"><label>Primera entrega si la parrilla tiene adicionales</label><input type="number" min="0" id="mSlaEA" placeholder="Igual que sin adicionales"></div>
+      <div class="campo"><label>Plazo del cliente para comentarios · días hábiles</label><input type="number" min="1" id="mSlaCo"></div>
+      <div class="campo"><label>Cada ronda de cambios · días hábiles</label><input type="number" min="1" id="mSlaR"></div>
+      <div class="campo"><label>Rondas de cambios incluidas</label><input type="number" min="0" id="mSlaN"></div>
+    </div>
+    <div class="campo"><label>Color en el planificador</label><div class="colores" id="mColores"></div></div>
+    <div class="modal-acc">
+      <button class="btn danger" id="mBorrar" onclick="borrarMarca()">Eliminar</button>
+      <span class="sp"></span>
+      <button class="btn ghost" onclick="cerrar('mMarca')">Cancelar</button>
+      <button class="btn" onclick="guardarMarca()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PLAN Y TÉRMINOS -->
+<div class="modal-bg" id="mPlan">
+  <div class="modal">
+    <h2>Plan activo y términos</h2>
+    <p class="sub">Escribe <b># </b> al inicio de una línea para un subtítulo y <b>- </b> para una viñeta. El cliente lo ve tal cual.</p>
+    <div class="campo"><label>Plan activo · modalidad</label><textarea id="plPlan" style="min-height:150px"></textarea></div>
+    <div class="campo"><label>Términos y condiciones</label><textarea id="plTerm" style="min-height:260px"></textarea></div>
+    <div class="campo"><label>Estado de los términos</label><input id="plEstado" placeholder="Ej: Firmados el 15 oct · o Borrador · por revisar"></div>
+    <div class="modal-acc"><span class="sp"></span>
+      <button class="btn ghost" onclick="cerrar('mPlan')">Cancelar</button>
+      <button class="btn" onclick="guardarPlan()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MÉTRICA A MANO -->
+<div class="modal-bg" id="mMetrica">
+  <div class="modal">
+    <h2>Métricas de una publicación</h2>
+    <p class="sub">Los datos están en Meta Business Suite → Estadísticas → Contenido.</p>
+    <div class="grid3">
+      <div class="campo"><label>Publicada el</label><input type="date" id="xFecha"></div>
+      <div class="campo"><label>Hora</label><input type="time" id="xHora"></div>
+      <div class="campo"><label>Formato</label><select id="xTipo"></select></div>
+    </div>
+    <div class="campo"><label>Pieza</label><select id="xPieza"></select></div>
+    <div class="campo"><label>Descripción (si no hay pieza)</label><input id="xDesc"></div>
+    <div class="grid3">
+      <div class="campo"><label>Alcance</label><input type="number" min="0" id="xAlcance"></div>
+      <div class="campo"><label>Visualizaciones</label><input type="number" min="0" id="xVistas"></div>
+      <div class="campo"><label>Me gusta</label><input type="number" min="0" id="xLikes"></div>
+      <div class="campo"><label>Comentarios</label><input type="number" min="0" id="xComentarios"></div>
+      <div class="campo"><label>Compartidos</label><input type="number" min="0" id="xCompartidos"></div>
+      <div class="campo"><label>Guardados</label><input type="number" min="0" id="xGuardados"></div>
+      <div class="campo"><label>Seguidores ganados</label><input type="number" min="0" id="xSeguidores"></div>
+    </div>
+    <div class="modal-acc">
+      <button class="btn danger" id="xBorrar" onclick="borrarMetrica()">Eliminar</button><span class="sp"></span>
+      <button class="btn ghost" onclick="cerrar('mMetrica')">Cancelar</button>
+      <button class="btn" onclick="guardarMetrica()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PÚBLICOS -->
+<div class="modal-bg" id="mPublicos">
+  <div class="modal">
+    <h2>Públicos</h2>
+    <p class="sub">Copia los datos de Meta Business Suite → Estadísticas → Público.</p>
+    <div class="grid3">
+      <div class="campo"><label>Mes</label><input type="month" id="qMes"></div>
+      <div class="campo"><label>Seguidores</label><input type="number" min="0" id="qSeguidores"></div>
+      <div class="campo"><label>Nuevos este mes</label><input type="number" id="qNuevos"></div>
+      <div class="campo"><label>% mujeres</label><input id="qMujeres" placeholder="Ej: 78"></div>
+      <div class="campo"><label>% hombres</label><input id="qHombres" placeholder="Ej: 22"></div>
+      <div class="campo"><label>Horas más activas</label><input id="qHoras" placeholder="Ej: 6 a 9 p. m."></div>
+    </div>
+    <div class="grid2">
+      <div class="campo"><label>Edades · rango: %</label><textarea id="qEdades" placeholder="18-24: 12&#10;25-34: 41&#10;35-44: 28&#10;45-54: 12"></textarea></div>
+      <div class="campo"><label>Ciudades · ciudad: %</label><textarea id="qCiudades" placeholder="Medellín: 62&#10;Envigado: 9&#10;Bello: 6"></textarea></div>
+    </div>
+    <div class="modal-acc"><span class="sp"></span>
+      <button class="btn ghost" onclick="cerrar('mPublicos')">Cancelar</button>
+      <button class="btn" onclick="guardarPublicos()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL USUARIOS -->
+<div class="modal-bg" id="mUsuarios">
+  <div class="modal">
+    <h2>Usuarios y accesos</h2>
+    <p class="sub">Administradoras ven todo. Cada cliente entra solo al dashboard de su marca.</p>
+    <div class="usuarios" id="listaUsuarios"></div>
+    <div class="modal-acc" style="margin:0 0 22px;justify-content:flex-start">
+      <button class="btn sm ghost" onclick="descargarRespaldo()">⬇ Copia de seguridad</button>
+      <button class="btn sm ghost" onclick="$('fRespaldo').click()">⬆ Restaurar copia</button>
+      <input type="file" id="fRespaldo" accept=".json" hidden onchange="restaurarRespaldo(event)">
+    </div>
+    <div class="sec-label" style="margin-bottom:12px" id="uFormT">Nuevo usuario</div>
+    <div class="grid2">
+      <div class="campo"><label>Nombre</label><input id="uNom" placeholder="Ej: Copa Café Bar"></div>
+      <div class="campo"><label>Correo</label><input id="uUsr" type="email" autocapitalize="none" placeholder="Ej: mercadeo@copacafebar.com"></div>
+      <div class="campo" id="uClaveC"><label>Contraseña inicial</label><input id="uClave" placeholder="Vacía si entra con Google"><small id="uClaveAyuda"></small></div>
+      <div class="campo"><label>Acceso</label><select id="uRol" onchange="$('uMarcaC').hidden=this.value!=='cliente'"><option value="cliente">Cliente de una marca</option><option value="admin">Administradora (todo)</option></select></div>
+      <div class="campo" id="uMarcaC"><label>Marca</label><select id="uMarca"></select></div>
+    </div>
+    <div class="modal-acc">
+      <button class="btn ghost" id="uClaveMail" onclick="enviarCambioClave()" hidden>Enviar correo para cambiar contraseña</button>
+      <button class="btn ghost" id="uCancelar" onclick="limpiarUsuario()" hidden>Cancelar edición</button>
+      <span class="sp"></span>
+      <button class="btn ghost" onclick="cerrar('mUsuarios')">Cerrar</button>
+      <button class="btn" onclick="guardarUsuario()">Guardar usuario</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══ Configuración ═══
+const ESTADOS = [
+  { id: 'idea', nombre: 'Idea' },
+  { id: 'guion', nombre: 'Guion' },
+  { id: 'grabacion', nombre: 'Grabación' },
+  { id: 'edicion', nombre: 'Edición' },
+  { id: 'revision', nombre: 'Revisión cliente' },
+  { id: 'aprobada', nombre: 'Aprobada' },
+  { id: 'programada', nombre: 'Programada' },
+  { id: 'publicada', nombre: 'Publicada' }
+];
+// El cliente ve los estados internos agrupados
+const ESTADO_CLIENTE = { idea: 'En producción', guion: 'En producción', grabacion: 'En producción', edicion: 'En producción', revision: 'Lista para revisar', aprobada: 'Aprobada', programada: 'Programada', publicada: 'Publicada' };
+const LISTAS = ['aprobada', 'programada', 'publicada'];
+const PROGRAMADAS = ['programada', 'publicada'];
+// Etapas del ciclo mensual de cada marca
+const CICLO = [
+  { id: 'parrilla', nombre: 'Parrilla' },
+  { id: 'aprobacion', nombre: 'Aprobación' },
+  { id: 'grabacion', nombre: 'Grabación' },
+  { id: 'edicion', nombre: 'Edición' },
+  { id: 'programacion', nombre: 'Programación' },
+  { id: 'publicacion', nombre: 'Publicación' },
+  { id: 'lectura', nombre: 'Lectura de resultados' }
+];
+const T_ESTADOS = [{ id: 'pendiente', nombre: 'Por hacer', cls: 'e-idea' }, { id: 'curso', nombre: 'En curso', cls: 'e-guion' }, { id: 'hecha', nombre: 'Hecha', cls: 'e-aprobada' }];
+const PRIORIDADES = { urgente: '⚑ Urgente', alta: '⚑ Alta', normal: '⚑ Normal', baja: '⚑ Baja' };
+const FORMATOS = { reel: ['🎬', 'Reel'], estatica: ['🖼️', 'Estática'], carrusel: ['🗂️', 'Carrusel'], historia: ['📱', 'Historia'], tiktok: ['🎵', 'TikTok'] };
+const TIPO_IC = { 'Parrilla mensual': '📋', 'Evento': '🎉', 'Lanzamiento': '🚀', 'Jornada de grabación': '🎥', 'Otro': '📁' };
+const COLORES = ['#2025C9','#6670FF','#B098F0','#5A1A1A','#B3141B','#1C7A47','#E2551F','#E08A00','#DB2777','#0E7490','#7C3AED','#6B4F3A','#A88A7E','#334155'];
+const DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+// Correos con acceso de administradora desde el primer ingreso (también en las reglas de Firestore)
+const FUNDADORAS = ['valentinavg11@gmail.com'];
+
+
+// ═══ Estado ═══
+let db = vacia();
+let sesion = null, CLIENTE = null;
+let ruta = { vista: 'inicio' };
+let planMes = new Date(); planMes.setDate(1);
+let modo = 'agenda', tFiltroVer = 'abiertas', tFiltroResp = '';
+let editPieza = null, editMarca = null, editProyecto = null, proyMarca = null, verId = null, editTarea = null, editUsuario = null;
+let abiertosProy = new Set(), subsTmp = [], mColor;
+
+function vacia() { return { marcas: [], proyectos: [], piezas: [], tareas: [], usuarios: [] }; }
+
+// ═══ Firebase: cada marca, pieza, proyecto y tarea es un documento ═══
+// guardar() compara con lo último que llegó de la nube y sube solo lo que cambió.
+const COLS = ['marcas', 'proyectos', 'piezas', 'tareas'];
+let nube = {}, escuchas = [], pintarPend = false;
+function limpio(col, x) {
+  const o = JSON.parse(JSON.stringify(x)); delete o.id;
+  if (col === 'tareas') o.privada = !!o.privada;
+  return o;
+}
+function guardar() { sincronizar(); render(); }
+function sincronizar() {
+  const ops = [];
+  COLS.forEach(col => {
+    const antes = nube[col] || {}, ahora = {};
+    db[col].forEach(x => {
+      const j = JSON.stringify(limpio(col, x)); ahora[x.id] = j;
+      if (antes[x.id] !== j) ops.push({ col, id: x.id, datos: JSON.parse(j) });
+    });
+    Object.keys(antes).forEach(id => { if (!(id in ahora)) ops.push({ col, id, borrar: true }); });
+    nube[col] = ahora;
+  });
+  if (ops.length) FB.lote(ops).catch(e => { console.error(e); toast('No se pudo guardar en la nube. Revisa tu conexión.'); });
+}
+function pintarLuego() {
+  if (pintarPend) return; pintarPend = true;
+  requestAnimationFrame(() => { pintarPend = false; render(); });
+}
+// Recibe los cambios de la nube (de esta pantalla o de otra persona)
+function recibir(col, docs) {
+  db[col] = docs;
+  if (COLS.includes(col)) { nube[col] = {}; docs.forEach(x => nube[col][x.id] = JSON.stringify(limpio(col, x))); }
+  if (col === 'usuarios' && $('mUsuarios').classList.contains('on')) pintarUsuarios();
+  pintarLuego();
+}
+const $ = id => document.getElementById(id);
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function iso(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function hoyISO() { return iso(new Date()); }
+// Días hábiles en Colombia (lunes a viernes sin festivos)
+const FESTIVOS = new Set([
+  '2026-01-01','2026-01-12','2026-03-23','2026-04-02','2026-04-03','2026-05-01',
+  '2026-05-18','2026-06-08','2026-06-15','2026-06-29','2026-07-20','2026-08-07',
+  '2026-08-17','2026-10-12','2026-11-02','2026-11-16','2026-12-08','2026-12-25',
+  '2027-01-01','2027-01-11','2027-03-22','2027-03-25','2027-03-26','2027-05-01',
+  '2027-05-10','2027-05-31','2027-06-07','2027-07-05','2027-07-20','2027-08-07',
+  '2027-08-16','2027-10-18','2027-11-01','2027-11-15','2027-12-08','2027-12-25'
+]);
+function esHabil(s) { const w = fecha(s).getDay(); return w !== 0 && w !== 6 && !FESTIVOS.has(s); }
+function sumarHabiles(s, n) { const d = fecha(s); let c = 0; while (c < n) { d.setDate(d.getDate() + 1); if (esHabil(iso(d))) c++; } return iso(d); }
+// Días hábiles de a (excluido) a b (incluido); negativo si b es anterior
+function habilesEntre(a, b) {
+  if (a === b) return 0;
+  let sg = 1; if (b < a) { [a, b] = [b, a]; sg = -1; }
+  const d = fecha(a); let c = 0;
+  while (iso(d) < b) { d.setDate(d.getDate() + 1); if (esHabil(iso(d))) c++; }
+  return c * sg;
+}
+function dh(n) { return n + (n === 1 ? ' día hábil' : ' días hábiles'); }
+function fLarga(s) { return DIAS[fecha(s).getDay()].slice(0, 3) + ' ' + fCorta(s); }
+function sumarDias(n) { const d = new Date(); d.setDate(d.getDate() + n); return iso(d); }
+function fecha(s) { const [a, m, d] = s.split('-'); return new Date(a, m - 1, d); }
+function fCorta(s) { if (!s) return ''; const d = fecha(s); return d.getDate() + ' ' + MESES[d.getMonth()]; }
+function nombreMes(d, conAnio) { const t = d.toLocaleDateString('es-CO', { month: 'long' }); return t[0].toUpperCase() + t.slice(1) + (conAnio ? ' ' + d.getFullYear() : ''); }
+function hora12(h) { if (!h) return ''; let [H, M] = h.split(':').map(Number); const ap = H >= 12 ? 'p. m.' : 'a. m.'; H = H % 12 || 12; return H + ':' + String(M).padStart(2, '0') + ' ' + ap; }
+function marcaDe(id) { return db.marcas.find(m => m.id === id) || { nombre: '—', color: '#999' }; }
+function proyDe(id) { return db.proyectos.find(p => p.id === id); }
+function esc(s) { return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function logo(m) { return m.logo ? `<img class="mini-logo" src="${esc(m.logo)}" alt="">` : `<span class="mini-logo sin">${m.emoji || esc((m.nombre || '?')[0])}</span>`; }
+function logoGrande(m) { return `<div class="logo-ic">${m.logo ? `<img src="${esc(m.logo)}" alt="${esc(m.nombre)}">` : m.emoji || esc(m.nombre[0])}</div>`; }
+function chipEstado(e) { const x = ESTADOS.find(s => s.id === e) || ESTADOS[0]; return `<span class="estado e-${x.id}">${CLIENTE ? ESTADO_CLIENTE[x.id] : x.nombre}</span>`; }
+function atrasada(p) { return p.pub && p.pub < hoyISO() && p.estado !== 'publicada'; }
+function mesRef() { return iso(planMes).slice(0, 7); }
+function toast(t) { const el = $('toast'); el.textContent = t; el.classList.add('on'); setTimeout(() => el.classList.remove('on'), 1900); }
+function esAdmin() { return sesion && sesion.rol === 'admin'; }
+function tareasVisibles(marca) { return db.tareas.filter(t => (!marca || t.marca === marca) && (!CLIENTE || !t.privada)); }
+
+// Link de Drive → vista previa incrustada
+function drivePreview(url) {
+  if (!url) return '';
+  let m = url.match(/\/file\/d\/([^/?#]+)/) || url.match(/[?&]id=([^&#]+)/);
+  if (m && !/folders/.test(url)) return 'https://drive.google.com/file/d/' + m[1] + '/preview';
+  m = url.match(/\/folders\/([^/?#]+)/);
+  if (m) return 'https://drive.google.com/embeddedfolderview?id=' + m[1] + '#grid';
+  return '';
+}
+// Miniatura de la pieza a partir de su link de Drive (archivo compartido con enlace)
+function driveId(url) { const m = (url || '').match(/\/file\/d\/([^/?#]+)/) || (/folders/.test(url || '') ? null : (url || '').match(/[?&]id=([^&#]+)/)); return m ? m[1] : ''; }
+function miniUrl(p) { const id = driveId(p.final); return id ? 'https://drive.google.com/thumbnail?id=' + id + '&sz=w400' : ''; }
+function thumb(p) {
+  const f = FORMATOS[p.formato] || FORMATOS.reel, u = miniUrl(p);
+  return `<span class="thumb">${u ? `<img src="${u}" alt="" loading="lazy" onerror="this.replaceWith('${f[0]}')">` : f[0]}</span>`;
+}
+function botonDrive(p) {
+  return p.final ? `<a class="drive" href="${esc(p.final)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">▶ Ver en Drive</a>` : '<span class="sin-drive">sin archivo</span>';
+}
+
+// ═══ Sesión (Firebase Auth: se entra con correo) ═══
+const ERRORES = {
+  'auth/invalid-credential': 'Correo o contraseña incorrectos', 'auth/wrong-password': 'Correo o contraseña incorrectos',
+  'auth/user-not-found': 'Correo o contraseña incorrectos', 'auth/invalid-email': 'Escribe un correo válido',
+  'auth/too-many-requests': 'Demasiados intentos. Espera unos minutos.', 'auth/network-request-failed': 'Sin conexión a internet',
+  'auth/popup-blocked': 'El navegador bloqueó la ventana de Google. Permite las ventanas emergentes.',
+  'auth/unauthorized-domain': 'Este sitio no está autorizado en Firebase todavía',
+  'auth/email-already-in-use': 'Ese correo ya tiene una cuenta', 'auth/weak-password': 'La contraseña debe tener mínimo 6 caracteres'
+};
+function msjError(e) { return ERRORES[e && e.code] || 'Algo salió mal. Intenta de nuevo.'; }
+function entrar() {
+  const u = $('lUsuario').value.trim().toLowerCase(), c = $('lClave').value;
+  if (!u || !c) { $('lError').textContent = 'Escribe tu correo y tu contraseña'; return; }
+  $('lError').textContent = ''; $('lBtn').disabled = true;
+  FB.entrar(u, c).catch(e => { $('lError').textContent = msjError(e); }).finally(() => $('lBtn').disabled = false);
+}
+function entrarGoogle() {
+  $('lError').textContent = ''; $('lGoogle').disabled = true;
+  FB.google().catch(e => { if (e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request') $('lError').textContent = msjError(e); })
+    .finally(() => $('lGoogle').disabled = false);
+}
+function olvideClave() {
+  const u = $('lUsuario').value.trim().toLowerCase();
+  if (!u) { $('lError').textContent = 'Escribe tu correo arriba y vuelve a hacer clic aquí'; $('lUsuario').focus(); return; }
+  FB.recuperar(u).then(() => { $('lError').textContent = ''; toast('Te enviamos un correo para crear una contraseña nueva'); })
+    .catch(e => { $('lError').textContent = msjError(e); });
+}
+// La nube avisa quién entró: se busca su perfil (rol y marca) y se conectan sus datos
+async function alCambiarSesion(user) {
+  escuchas.forEach(f => f()); escuchas = []; db = vacia(); nube = {};
+  if (!user) { mostrarLogin(); return; }
+  try {
+    const correo = (user.email || '').toLowerCase();
+    let perfil = await FB.perfil(correo);
+    if (!perfil && FUNDADORAS.includes(correo) && user.emailVerified) {
+      perfil = { nombre: correo.split('@')[0].replace(/^./, c => c.toUpperCase()), correo, rol: 'admin', marca: '' };
+      if (user.displayName) perfil.nombre = user.displayName.split(' ')[0];
+      await FB.poner('usuarios', correo, perfil);
+    }
+    if (!perfil) { await FB.salir(); mostrarLogin('Este correo no tiene acceso. Pídelo a Hounter Leads.'); return; }
+    const usr = { id: correo, ...perfil };
+    escuchas = FB.escuchar(usr, recibir, primera => {
+      if (usr.rol === 'cliente' && !db.marcas.some(m => m.id === usr.marca)) { FB.salir(); mostrarLogin('Este usuario no tiene una marca asignada'); return; }
+      $('lClave').value = ''; $('cargando').hidden = true;
+      iniciarSesion(usr);
+      if (!location.hash || location.hash === '#') location.hash = usr.rol === 'admin' ? '#/inicio' : '#/marca/' + usr.marca + '/planificador';
+      rutear();
+      if (usr.rol === 'admin' && !db.marcas.length) toast('Todavía no hay marcas: carga la copia inicial en 👥 → Restaurar copia');
+    }, e => { console.error(e); toast('No se pudieron cargar los datos: ' + (e.code || e.message)); });
+  } catch (e) { console.error(e); await FB.salir(); mostrarLogin('No se pudo conectar: ' + (e.code || e.message)); }
+}
+function mostrarLogin(error) {
+  sesion = null; CLIENTE = null;
+  document.body.classList.remove('cliente');
+  $('cargando').hidden = true; $('pApp').hidden = true; $('pLogin').hidden = false;
+  $('lError').textContent = error || '';
+  setTimeout(() => $('lUsuario').focus(), 50);
+}
+function iniciarSesion(usr) {
+  sesion = usr;
+  CLIENTE = usr.rol === 'cliente' ? usr.marca : null;
+  document.body.classList.toggle('cliente', !!CLIENTE);
+  document.querySelectorAll('.solo-admin').forEach(el => el.hidden = !esAdmin());
+  $('uNombre').textContent = usr.nombre;
+  $('pLogin').hidden = true; $('pApp').hidden = false;
+}
+function salir() { location.hash = ''; FB.salir(); }
+
+// ═══ Rutas: #/inicio · #/marca/<id>/<pestaña> ═══
+function rutear() {
+  if (!sesion) return;
+  const [, v, id, tab] = location.hash.split('/');
+  if (v === 'marca' && db.marcas.some(m => m.id === id)) ruta = { vista: 'marca', marca: id, tab: ['planificador', 'parrilla', 'tareas', 'contenido', 'metricas', 'plan'].includes(tab) ? tab : 'planificador' };
+  else ruta = { vista: 'inicio' };
+  // Un cliente solo puede estar en su marca
+  if (CLIENTE && (ruta.vista !== 'marca' || ruta.marca !== CLIENTE)) { location.hash = '#/marca/' + CLIENTE + '/planificador'; return; }
+  $('panelCampana').hidden = true;
+  render();
+  window.scrollTo(0, 0);
+}
+window.addEventListener('hashchange', rutear);
+
+function render() {
+  if (!sesion) return;
+  $('logoLink').href = CLIENTE ? '#/marca/' + CLIENTE + '/planificador' : '#/inicio';
+  if (ruta.vista === 'inicio') renderInicio(); else renderMarca();
+  renderCampana();
+}
+
+// ═══ Ciclo (etapas) ═══
+function ciclo(m, editable, compacto) {
+  const i = Math.max(0, CICLO.findIndex(e => e.id === m.etapa));
+  return `<div class="ciclo ${editable ? 'editable' : ''} ${compacto ? 'compacto' : ''}">${CICLO.map((e, k) => `<button class="paso ${k < i ? 'hecho' : k === i ? 'actual' : ''}" ${editable ? `title="Pasar a ${e.nombre}" onclick="event.stopPropagation();cambiarEtapa('${m.id}','${e.id}')"` : 'tabindex="-1"'}>
+    <i>${k < i ? '✓' : k + 1}</i><span>${e.nombre}</span></button>`).join('')}</div>`;
+}
+function cambiarEtapa(id, etapa) {
+  if (!esAdmin()) return;
+  marcaDe(id).etapa = etapa; guardar();
+  toast(marcaDe(id).nombre + ' → ' + CICLO.find(e => e.id === etapa).nombre);
+}
+function etapaNombre(m) { return (CICLO.find(e => e.id === m.etapa) || CICLO[0]).nombre; }
+function mesCiclo(m) { return m.mes ? nombreMes(fecha(m.mes + '-01')) : ''; }
+
+// ═══ INICIO: centro de administración ═══
+function resumenMarca(m, mes) {
+  const ps = db.piezas.filter(p => p.marca === m.id && p.pub && p.pub.startsWith(mes));
+  const prog = ps.filter(p => PROGRAMADAS.includes(p.estado)).length;
+  const plan = ps.filter(p => !p.adicional), adic = ps.length - plan.length;
+  const meta = Math.max(plan.length, +m.cupo || 0);
+  return { total: ps.length, prog: plan.filter(p => PROGRAMADAS.includes(p.estado)).length, adic, meta, alertas: alertas(m.id).filter(a => a.nivel !== 'verde').length };
+}
+function renderInicio() {
+  $('heroCuerpo').innerHTML = `
+    <span class="pill">Centro de administración</span>
+    <h1>Centro de administración<br>de <em>contenidos</em>.</h1>
+    <p class="lead">Lo que debe quedar programado este mes, en qué etapa va cada marca y lo que necesita atención.</p>`;
+  const mes = mesRef();
+  const ps = db.piezas.filter(p => p.pub && p.pub.startsWith(mes));
+  const prog = ps.filter(p => PROGRAMADAS.includes(p.estado)).length;
+  const meta = db.marcas.reduce((s, m) => s + Math.max(+m.cupo || 0, db.piezas.filter(p => p.marca === m.id && p.pub && p.pub.startsWith(mes)).length), 0);
+  const revision = db.piezas.filter(p => p.estado === 'revision').length;
+  const vencidas = db.tareas.filter(t => t.estado !== 'hecha' && t.vence && t.vence < hoyISO()).length;
+  $('stats').innerHTML = `
+    <div class="stat"><b>${prog}<small> / ${meta || ps.length}</small></b><span>programadas en ${nombreMes(planMes).toLowerCase()}</span></div>
+    <div class="stat"><b>${ps.length - prog}</b><span>por programar</span></div>
+    <div class="stat"><b>${revision}</b><span>esperando al cliente</span></div>
+    <div class="stat"><b style="color:${vencidas ? '#B42318' : 'var(--azul)'}">${vencidas}</b><span>tareas vencidas</span></div>`;
+
+  $('contenido').innerHTML = `
+  <section class="sec"><div class="wrap">
+    <div class="toolbar"><div class="sec-label" style="flex:1;margin:0">Marcas · etapa del ciclo</div>
+      <button class="btn sm" onclick="abrirMarca()">+ Nueva marca</button></div>
+    <div class="marcas-grid">${db.marcas.map(m => {
+      const r = resumenMarca(m, mes), pct = r.meta ? Math.round(r.prog / r.meta * 100) : 0;
+      return `<div class="mcard">
+        <div class="mcard-h">${logoGrande(m)}<div class="sp"><h3>${esc(m.nombre)}</h3><p>${esc(m.sector)}${m.modo === 'solicitudes' ? ' · por solicitudes' : m.mes ? ' · ciclo ' + mesCiclo(m).toLowerCase() : ''}</p></div>
+          ${r.alertas ? `<span class="alerta-n">🔔 ${r.alertas}</span>` : ''}</div>
+        ${m.modo === 'solicitudes' ? resumenGestion(m, true) : ciclo(m, true, true)}
+        ${m.modo === 'solicitudes' ? '' : `<div><div class="mcard-m"><span>Programadas del plan en ${nombreMes(planMes).toLowerCase()}</span><b>${r.prog} / ${r.meta}${r.adic ? ` <span class="adic" title="Fuera del presupuesto">+${r.adic} adic.</span>` : ''}</b></div><div class="barra"><i style="width:${pct}%"></i></div></div>`}
+        <div style="display:flex;gap:8px"><a class="btn" style="flex:1" href="#/marca/${m.id}/planificador">Entrar al dashboard →</a>
+          <button class="btn ghost" title="Editar marca" onclick="abrirMarca('${m.id}')">✎</button></div>
+      </div>`; }).join('')}</div>
+  </div></section>
+
+  <section class="sec"><div class="wrap">
+    <div class="sec-label">Planeador del mes · lo que debe estar programado</div>
+    <div class="plan-h">
+      <button class="btn ghost" onclick="moverMes(-1)">◀</button>
+      <h3>${nombreMes(planMes, true)}</h3>
+      <button class="btn ghost" onclick="moverMes(1)">▶</button>
+      <button class="btn ghost" onclick="irHoy()">Este mes</button>
+      <span style="flex:1"></span>
+      <select class="sel" id="pfMarca" onchange="renderPlaneadorInicio()"><option value="">Todas las marcas</option>${db.marcas.map(m => `<option value="${m.id}">${esc(m.nombre)}</option>`).join('')}</select>
+      <button class="btn" onclick="abrirPieza()">+ Publicación</button>
+    </div>
+    <div id="planeadorInicio"></div>
+  </div></section>`;
+  renderPlaneadorInicio();
+}
+function faltantes(p) {
+  if (PROGRAMADAS.includes(p.estado)) return [];
+  return [!p.hora && 'hora', !p.copy && 'copy', !p.final && 'archivo', p.estado === 'revision' && 'aprobación'].filter(Boolean);
+}
+function renderPlaneadorInicio() {
+  const fm = $('pfMarca') ? $('pfMarca').value : '';
+  const ps = db.piezas.filter(p => p.pub && p.pub.startsWith(mesRef()) && (!fm || p.marca === fm))
+    .sort((a, b) => (a.pub + (a.hora || '99')).localeCompare(b.pub + (b.hora || '99')));
+  $('planeadorInicio').innerHTML = ps.length ? `<table class="tabla"><thead><tr><th>Sale</th><th>Marca</th><th>Pieza</th><th>Estado</th><th class="col-opc">Para programar falta</th></tr></thead><tbody>
+    ${ps.map(p => { const m = marcaDe(p.marca), f = FORMATOS[p.formato] || FORMATOS.reel, fl = faltantes(p); return `<tr onclick="verPieza('${p.id}')">
+      <td class="fecha"><b>${DIAS[fecha(p.pub).getDay()].slice(0, 3)} ${fCorta(p.pub)}</b><br>${p.hora ? hora12(p.hora) : 'sin hora'}</td>
+      <td><span class="mk">${logo(m)}${esc(m.nombre)}</span></td>
+      <td><div class="pieza-cel">${thumb(p)}<div><div class="tit">${esc(p.titulo)} ${p.adicional ? '<span class="adic">Adicional</span>' : ''}</div><div class="fecha">${f[0]} ${f[1]} · ${esc(p.red || '')}${p.uso && p.uso !== 'Orgánico' ? ' · ' + esc(p.uso) : ''}</div></div></div></td>
+      <td>${chipEstado(p.estado)}${atrasada(p) ? '<br><span class="tarde">⚠ atrasada</span>' : ''}</td>
+      <td class="col-opc">${fl.length ? fl.map(x => `<span class="falta">${x}</span>`).join('') : PROGRAMADAS.includes(p.estado) ? '<span class="ok-prog">✓ Programada</span>' : '<span class="ok-prog" style="color:var(--azul)">Lista para programar</span>'}</td>
+    </tr>`; }).join('')}</tbody></table>`
+    : `<div class="vacio">No hay publicaciones con fecha en ${nombreMes(planMes).toLowerCase()}. Agrégalas desde el dashboard de cada marca o con “+ Publicación”.</div>`;
+}
+
+// ═══ DASHBOARD DE MARCA ═══
+function renderMarca() {
+  const m = marcaDe(ruta.marca);
+  const t = ruta.tab;
+  $('heroCuerpo').innerHTML = `
+    ${CLIENTE ? '' : `<button class="volver" onclick="location.hash='#/inicio'">← Centro de administración</button><br>`}
+    <span class="pill">${m.logo ? `<img src="${esc(m.logo)}" alt="">` : ''}${esc(m.nombre)}</span>
+    <h1>${CLIENTE ? 'Tu contenido,<br><em>día a día</em>.' : esc(m.nombre) + '<br><em>' + (m.modo === 'solicitudes' ? 'contenidos solicitados' : mesCiclo(m) ? 'ciclo ' + mesCiclo(m).toLowerCase() : 'dashboard') + '</em>'}</h1>
+    <p class="lead">${CLIENTE ? 'Revisa qué se publica, qué día, a qué hora y con qué copy. Las piezas listas y tu carpeta de contenido se abren aquí mismo.' : (m.modo === 'solicitudes' ? 'Planificador, contenidos solicitados' : 'Planificador, parrilla') + ', tareas y carpeta de contenido de la marca. Lo mismo que ve el cliente, más las herramientas del equipo.'}</p>
+    ${m.modo === 'solicitudes' ? `<div class="ciclo-hero"><div class="ciclo-t">Gestión de solicitudes</div>${resumenGestion(m)}</div>`
+      : `<div class="ciclo-hero"><div class="ciclo-t">Etapa del ciclo${m.mes ? ' · ' + mesCiclo(m) : ''}</div>${ciclo(m, esAdmin())}</div>`}
+    <div class="navbtns">
+      <a class="navbtn ${t === 'planificador' ? 'on' : ''}" href="#/marca/${m.id}/planificador">📅 Planificador</a>
+      <a class="navbtn ${t === 'parrilla' ? 'on' : ''}" href="#/marca/${m.id}/parrilla">${m.modo === 'solicitudes' ? '📥 Solicitudes' : '📋 Parrilla'}</a>
+      <a class="navbtn ${t === 'tareas' ? 'on' : ''}" href="#/marca/${m.id}/tareas">✅ Tareas</a>
+      <a class="navbtn ${t === 'contenido' ? 'on' : ''}" href="#/marca/${m.id}/contenido">📁 Contenido</a>
+      <a class="navbtn ${t === 'metricas' ? 'on' : ''}" href="#/marca/${m.id}/metricas">📊 Métricas</a>
+      <a class="navbtn ${t === 'plan' ? 'on' : ''}" href="#/marca/${m.id}/plan">📄 Plan y términos</a>
+    </div>`;
+  const ps = db.piezas.filter(p => p.marca === m.id);
+  const delMes = ps.filter(p => p.pub && p.pub.startsWith(mesRef()));
+  const delPlan = delMes.filter(p => !p.adicional), nAdic = delMes.length - delPlan.length;
+  const prog = delPlan.filter(p => PROGRAMADAS.includes(p.estado)).length;
+  const tAb = tareasVisibles(m.id).filter(x => x.estado !== 'hecha').length;
+  $('stats').innerHTML = `
+    ${m.modo === 'solicitudes' ? `<div class="stat"><b>${ps.filter(p => !['aprobada', 'programada', 'publicada'].includes(p.estado)).length}</b><span>contenidos en gestión</span></div>` : `<div class="stat"><b>${prog}<small> / ${Math.max(delPlan.length, +m.cupo || 0)}</small></b><span>del plan programadas en ${nombreMes(planMes).toLowerCase()}${nAdic ? ` · <span class="adic">+${nAdic} adicional${nAdic === 1 ? '' : 'es'}</span>` : ''}</span></div>`}
+    <div class="stat"><b>${ps.filter(p => ['idea', 'guion', 'grabacion', 'edicion'].includes(p.estado)).length}</b><span>en producción</span></div>
+    <div class="stat"><b>${ps.filter(p => p.estado === 'revision').length}</b><span>${CLIENTE ? 'listas para que revises' : 'esperando al cliente'}</span></div>
+    <div class="stat"><b>${tAb}</b><span>tareas abiertas</span></div>`;
+  if (t === 'planificador') renderPlanificador(m);
+  else if (t === 'parrilla') m.modo === 'solicitudes' ? renderSolicitudes(m) : renderParrilla(m);
+  else if (t === 'contenido') renderContenido(m);
+  else if (t === 'plan') renderPlan(m);
+  else if (t === 'metricas') renderMetricas(m);
+  else renderTareasMarca(m);
+}
+
+// ─── Planificador ───
+function moverMes(n) { planMes.setMonth(planMes.getMonth() + n); render(); }
+function irHoy() { planMes = new Date(); planMes.setDate(1); render(); }
+function renderPlanificador(m) {
+  $('contenido').innerHTML = `<section class="sec"><div class="wrap">
+    <div class="toolbar">
+      <div class="seg"><button class="${modo === 'agenda' ? 'on' : ''}" onclick="modo='agenda';render()">Agenda con copy</button><button class="${modo === 'mes' ? 'on' : ''}" onclick="modo='mes';render()">Mes</button></div>
+      <span class="sp"></span>
+      <button class="btn solo-equipo" onclick="abrirPieza(null,'${m.id}')">+ Publicación</button>
+    </div>
+    <div class="plan-h">
+      <button class="btn ghost" onclick="moverMes(-1)">◀</button>
+      <h3>${nombreMes(planMes, true)}</h3>
+      <button class="btn ghost" onclick="moverMes(1)">▶</button>
+      <button class="btn ghost" onclick="irHoy()">Este mes</button>
+    </div>
+    <div id="vistaPlan"></div>
+  </div></section>`;
+  const ps = db.piezas.filter(p => p.marca === m.id);
+  $('vistaPlan').innerHTML = modo === 'agenda' ? agenda(ps) : calendario(ps);
+}
+function agenda(piezas) {
+  const posts = piezas.filter(p => p.pub && p.pub.startsWith(mesRef())).sort((a, b) => (a.pub + (a.hora || '99')).localeCompare(b.pub + (b.hora || '99')));
+  if (!posts.length) return '<div class="vacio">No hay publicaciones planificadas este mes.' + (CLIENTE ? '' : ' Agrega una con “+ Publicación”.') + '</div>';
+  let html = '', semAnt = '';
+  posts.forEach(p => {
+    const d = fecha(p.pub), lun = new Date(d); lun.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+    const dom = new Date(lun); dom.setDate(lun.getDate() + 6);
+    const sem = 'Semana del ' + lun.getDate() + ' ' + MESES[lun.getMonth()] + ' al ' + dom.getDate() + ' ' + MESES[dom.getMonth()];
+    if (sem !== semAnt) { html += `<div class="semana-t">${sem}</div>`; semAnt = sem; }
+    const m = marcaDe(p.marca), f = FORMATOS[p.formato] || FORMATOS.reel, prev = drivePreview(p.final), pr = proyDe(p.proyecto);
+    const largo = p.copy && (p.copy.length > 260 || p.copy.split('\n').length > 4);
+    html += `<div class="post">
+      <div class="post-fecha" style="background:${m.color}"><div class="dsem">${DIAS[d.getDay()].slice(0, 3)}</div><div class="dnum">${d.getDate()}</div><div class="hora">${p.hora ? hora12(p.hora) : 'hora ?'}</div></div>
+      <div class="post-cuerpo">
+        <div class="post-top">${f[0]} ${f[1]} · ${esc(p.red || '')}${pr ? ' · ' + esc(pr.nombre) : ''} ${chipEstado(p.estado)}${!CLIENTE && atrasada(p) ? ' <span class="tarde">⚠ atrasada</span>' : ''}</div>
+        ${p.adicional ? '<span class="adic" title="Fuera del presupuesto del plan">Adicional · fuera del presupuesto</span>' : ''}
+        <h4>${esc(p.titulo)} ${p.uso && p.uso !== 'Orgánico' ? `<span class="uso">${esc(p.uso)}</span>` : ''}</h4>
+        <div class="copy ${p.copy ? '' : 'vacio-copy'}">${p.copy ? esc(p.copy) : 'Copy pendiente'}</div>
+        ${largo ? `<button class="mas" onclick="this.previousElementSibling.classList.toggle('abierto');this.textContent=this.textContent==='Ver copy completo'?'Ver menos':'Ver copy completo'">Ver copy completo</button>` : ''}
+        <div class="post-acc">
+          ${p.final ? `<button class="btn sm" onclick="verPieza('${p.id}')">▶ Ver pieza</button>` : '<span class="sin-drive">La pieza aún no está en Drive</span>'}
+          <button class="btn sm ghost solo-equipo" onclick="abrirPieza('${p.id}')">✎ Editar</button>
+        </div>
+      </div>
+      <div class="post-mini" ${p.final ? `onclick="verPieza('${p.id}')" style="cursor:pointer"` : ''}>${miniUrl(p) ? `<img src="${miniUrl(p)}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.replaceWith('${f[0]}')">` : f[0]}</div>
+    </div>`;
+  });
+  return html;
+}
+function calendario(ps) {
+  const ini = new Date(planMes); ini.setDate(1 - ((planMes.getDay() + 6) % 7)); // arranca en lunes
+  const hoy = hoyISO();
+  let html = '<div class="cal">' + ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map(d => `<div class="dn">${d}</div>`).join('');
+  for (let i = 0; i < 42; i++) {
+    const d = new Date(ini); d.setDate(ini.getDate() + i);
+    const s = iso(d);
+    const chips = ps.filter(p => p.pub === s).sort((a, b) => (a.hora || '99').localeCompare(b.hora || '99'))
+      .map(p => `<span class="chip ${p.adicional ? 'es-adic' : ''}" style="background:${marcaDe(p.marca).color}" title="${esc(p.titulo)}${p.adicional ? ' · ADICIONAL' : ''}" onclick="verPieza('${p.id}')">${miniUrl(p) ? `<img class="chip-img" src="${miniUrl(p)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<b>${p.hora ? hora12(p.hora).replace(' ', '').replace('. m.', '') : ''}</b>${esc(p.titulo)}</span>`)
+      .concat(CLIENTE ? [] : ps.filter(p => p.grab === s).map(p => `<span class="chip grab" style="border-color:${marcaDe(p.marca).color}" title="Grabación · ${esc(p.titulo)}" onclick="verPieza('${p.id}')">🎥 ${esc(p.titulo)}</span>`));
+    html += `<div class="dia ${d.getMonth() !== planMes.getMonth() ? 'fuera' : ''} ${s === hoy ? 'hoy' : ''}"><div class="n">${d.getDate()}</div>${chips.join('')}</div>`;
+  }
+  return html + `</div><div class="leyenda"><span>■ Publicación (con hora)</span><span class="solo-equipo">⬚ Grabación</span></div>`;
+}
+
+// ─── Parrilla (proyectos de la marca) ───
+function tablaParrilla(piezas) {
+  if (!piezas.length) return '<div class="vacio">Este proyecto aún no tiene piezas.</div>';
+  const conSla = !!marcaDe(piezas[0].marca).sla;
+  return `<table class="tabla"><thead><tr><th>#</th><th>Pieza</th><th class="col-opc">Sale</th><th>Estado</th>${conSla ? '<th>Tiempos</th>' : ''}<th></th></tr></thead><tbody>
+    ${piezas.map((p, i) => { const f = FORMATOS[p.formato] || FORMATOS.reel; return `<tr class="${p.adicional ? 'es-adic' : ''}" onclick="verPieza('${p.id}')">
+      <td class="num">${String(i + 1).padStart(2, '0')}</td>
+      <td><div class="pieza-cel">${thumb(p)}<div><div class="tit">${esc(p.titulo)} ${p.adicional ? '<span class="adic" title="Fuera del presupuesto del plan">Adicional</span>' : ''} ${p.uso && p.uso !== 'Orgánico' ? `<span class="uso">${esc(p.uso)}</span>` : ''}</div><div class="fecha">${f[0]} ${f[1]}${p.red ? ' · ' + esc(p.red) : ''}${!CLIENTE && p.resp ? ' · 👤 ' + esc(p.resp) : ''}</div></div></div></td>
+      <td class="fecha col-opc">${p.pub ? fCorta(p.pub) + (p.hora ? ' · ' + hora12(p.hora) : '') : 'por definir'}${!CLIENTE && atrasada(p) ? '<br><span class="tarde">⚠ atrasada</span>' : ''}</td>
+      <td>${chipEstado(p.estado)}</td>
+      ${conSla ? `<td>${miniTiempos(p)}</td>` : ''}
+      <td style="text-align:right">${botonDrive(p)}</td></tr>`; }).join('')}
+  </tbody></table>`;
+}
+function bloqueProyecto(pr, piezas) {
+  const delPlan = piezas.filter(p => !p.adicional), nAdic = piezas.length - delPlan.length;
+  const listas = delPlan.filter(p => LISTAS.includes(p.estado)).length;
+  const total = Math.max(delPlan.length, +pr.cupo || 0);
+  const pct = total ? Math.round(listas / total * 100) : 0;
+  return `<div class="subgrp ${abiertosProy.has(pr.id) ? 'open' : ''}">
+    <div class="subgrp-head" onclick="abiertosProy.has('${pr.id}')?abiertosProy.delete('${pr.id}'):abiertosProy.add('${pr.id}');render()">
+      <div class="subgrp-ic">${TIPO_IC[pr.tipo] || '📁'}</div>
+      <div class="subgrp-info"><h4>${esc(pr.nombre)} ${pr.suelto ? '' : `<span class="estado ${pr.estado === 'cerrado' ? 'e-idea' : 'e-aprobada'}">${pr.estado === 'cerrado' ? 'Cerrado' : 'Activo'}</span>`}</h4>
+        <p>${esc(pr.tipo)} · ${listas} de ${total} pieza${total === 1 ? '' : 's'} del plan lista${total === 1 ? '' : 's'}${nAdic ? ` · <span class="adic">+${nAdic} adicional${nAdic === 1 ? '' : 'es'}</span>` : ''}</p>
+        <div class="barra"><i style="width:${pct}%"></i></div></div>
+      <span class="chevron">⌄</span>
+    </div>
+    <div class="subgrp-body">
+      <div class="proy-acc">
+        <button class="btn sm solo-equipo" onclick="abrirPieza(null,'${pr.marca}','${pr.suelto ? '' : pr.id}')">+ Pieza</button>
+        ${pr.link ? `<a class="btn sm ghost" href="${esc(pr.link)}" target="_blank" rel="noopener">📋 Ver parrilla ↗</a>` : ''}
+        ${pr.drive ? `<a class="btn sm ghost" href="${esc(pr.drive)}" target="_blank" rel="noopener">📁 Carpeta en Drive ↗</a>` : ''}
+        ${pr.suelto ? '' : `<button class="btn sm ghost solo-equipo" onclick="abrirProyecto('${pr.id}')">✎ Editar proyecto</button>`}
+      </div>
+      ${tablaParrilla(piezas)}
+    </div></div>`;
+}
+function renderParrilla(m) {
+  const orden = (a, b) => ((a.pub || '9') + (a.hora || '')).localeCompare((b.pub || '9') + (b.hora || ''));
+  const proys = db.proyectos.filter(p => p.marca === m.id).sort((a, b) => (a.estado === 'cerrado') - (b.estado === 'cerrado'));
+  const sueltas = db.piezas.filter(p => p.marca === m.id && !proyDe(p.proyecto)).sort(orden);
+  // Abrir por defecto los proyectos activos la primera vez
+  proys.forEach(p => { if (p.estado !== 'cerrado' && !abiertosProy.has('_' + p.id)) { abiertosProy.add(p.id); abiertosProy.add('_' + p.id); } });
+  const cuerpo = proys.map(pr => bloqueProyecto(pr, db.piezas.filter(p => p.proyecto === pr.id).sort(orden))).join('')
+    + (sueltas.length ? bloqueProyecto({ id: 'sueltas-' + m.id, marca: m.id, nombre: 'Piezas sueltas · sin parrilla asignada', tipo: 'Otro', suelto: true }, sueltas) : '');
+  $('contenido').innerHTML = `<section class="sec"><div class="wrap">
+    <div class="toolbar"><div class="sec-label" style="flex:1;margin:0">Parrillas y proyectos</div>
+      <button class="btn sm solo-equipo" onclick="abrirProyecto(null,'${m.id}')">+ Parrilla o proyecto</button></div>
+    ${cuerpo || '<div class="vacio">Todavía no hay una parrilla creada.' + (CLIENTE ? '' : ' Crea la del mes con “+ Parrilla o proyecto” (por ejemplo, “Parrilla noviembre 2026”) y agrégale sus piezas.') + '</div>'}
+  </div></section>`;
+}
+
+// ─── Contenido editado: carpeta de Drive de la marca ───
+function renderContenido(m) {
+  const fid = (m.drive || '').match(/\/folders\/([^/?#]+)/);
+  $('contenido').innerHTML = `<section class="sec"><div class="wrap">
+    <div class="toolbar"><div class="sec-label" style="flex:1;margin:0">Contenido editado · carpeta de Drive</div>
+      ${m.drive ? `<a class="btn" href="${esc(m.drive)}" target="_blank" rel="noopener">Abrir en Drive ↗</a>` : ''}
+      <button class="btn ghost solo-equipo" onclick="abrirMarca('${m.id}')">✎ Cambiar carpeta</button></div>
+    ${fid ? `<div class="drive-marco"><iframe src="https://drive.google.com/embeddedfolderview?id=${fid[1]}#grid"></iframe></div>
+      <p class="sin-drive" style="margin-top:10px">${CLIENTE ? 'Haz clic en un archivo para verlo o descargarlo.' : 'La carpeta debe estar compartida como “cualquier persona con el enlace puede ver”. Lo que suban a esa carpeta aparece aquí solo.'}</p>`
+      : `<div class="vacio">${CLIENTE ? 'Pronto verás aquí la carpeta con tu contenido editado.' : 'Esta marca aún no tiene carpeta. Ve a “✎ Cambiar carpeta” y pega el link de la carpeta de Drive (compartida como “cualquier persona con el enlace”).'}</div>`}
+  </div></section>`;
+}
+
+// ─── Tareas (lista tipo ClickUp) ───
+function iniciales(n) { return (n || '?').trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase(); }
+function filaTarea(t) {
+  const hoy = hoyISO(), venc = t.vence && t.vence < hoy && t.estado !== 'hecha';
+  const subs = t.sub || [], hechas = subs.filter(x => x.ok).length;
+  const pz = t.pieza && db.piezas.find(p => p.id === t.pieza);
+  return `<div class="tarea p-${t.prioridad}-b ${t.estado === 'hecha' ? 'hecha' : ''}" onclick="abrirTarea('${t.id}')">
+    <button class="check ${t.estado === 'hecha' ? 'ok' : t.estado === 'curso' ? 'curso' : ''}" title="Marcar como hecha" onclick="event.stopPropagation();marcarTarea('${t.id}')">${t.estado === 'hecha' ? '✓' : ''}</button>
+    <div class="t-tit"><span style="overflow:hidden;text-overflow:ellipsis">${esc(t.titulo)}</span>${subs.length ? `<small>☑ ${hechas}/${subs.length}</small>` : ''}${pz ? `<small>🎬 ${esc(pz.titulo)}</small>` : ''}${!CLIENTE && t.privada ? '<span class="privada">solo equipo</span>' : ''}</div>
+    <div class="t-resp">${t.resp ? `<span class="avatar">${esc(iniciales(t.resp))}</span>${esc(t.resp)}` : '<span class="avatar" style="background:var(--line)">+</span>'}</div>
+    <div class="t-fecha ${venc ? 'vencida' : t.vence === hoy ? 'hoyt' : ''}">${t.vence ? (t.vence === hoy ? 'Hoy' : fCorta(t.vence)) : '—'}</div>
+    <div class="prio p-${t.prioridad}">${PRIORIDADES[t.prioridad] || ''}</div>
+  </div>`;
+}
+function listaTareas(tareas, marca) {
+  const ordenP = { urgente: 0, alta: 1, normal: 2, baja: 3 };
+  const orden = (a, b) => (ordenP[a.prioridad] - ordenP[b.prioridad]) || (a.vence || '9').localeCompare(b.vence || '9');
+  const estados = tFiltroVer === 'abiertas' ? T_ESTADOS.filter(e => e.id !== 'hecha') : T_ESTADOS;
+  return estados.map(e => {
+    const lista = tareas.filter(t => t.estado === e.id).sort(orden);
+    if (!lista.length && e.id !== 'pendiente') return '';
+    return `<div class="tgrupo"><div class="tgrupo-h"><span class="estado ${e.cls}">${e.nombre}</span><small>${lista.length}</small></div>
+      ${lista.length ? '<div class="tcab"><span></span><span>Tarea</span><span>Responsable</span><span>Vence</span><span>Prioridad</span></div>' : ''}
+      ${lista.map(filaTarea).join('')}
+      ${e.id === 'pendiente' && !CLIENTE ? `<div class="rapida"><input id="tRapida" placeholder="+ Nueva tarea y Enter" onkeydown="if(event.key==='Enter'&&this.value.trim()){tareaRapida('${marca}',this.value)}"></div>` : ''}
+      ${!lista.length && CLIENTE ? '<div class="vacio">Sin tareas pendientes.</div>' : ''}
+    </div>`;
+  }).join('');
+}
+function renderTareasMarca(m) {
+  const ts = tareasVisibles(m.id);
+  const resp = [...new Set(ts.map(t => t.resp).filter(Boolean))].sort();
+  const filtradas = ts.filter(t => !tFiltroResp || t.resp === tFiltroResp);
+  $('contenido').innerHTML = `<section class="sec"><div class="wrap">
+    <div class="toolbar">
+      <select class="sel" onchange="tFiltroResp=this.value;render()"><option value="">Todos</option>${resp.map(r => `<option ${r === tFiltroResp ? 'selected' : ''}>${esc(r)}</option>`).join('')}</select>
+      <select class="sel" onchange="tFiltroVer=this.value;render()"><option value="abiertas" ${tFiltroVer === 'abiertas' ? 'selected' : ''}>Ocultar hechas</option><option value="todas" ${tFiltroVer === 'todas' ? 'selected' : ''}>Ver todas</option></select>
+      <span class="sp"></span>
+      <button class="btn solo-equipo" onclick="abrirTarea(null,'${m.id}')">+ Tarea</button>
+    </div>
+    ${listaTareas(filtradas, m.id)}
+  </div></section>`;
+}
+function tareaRapida(marca, titulo) {
+  db.tareas.push({ id: uid(), marca, titulo: titulo.trim(), estado: 'pendiente', prioridad: 'normal', resp: '', vence: '', pieza: '', notas: '', sub: [], privada: false, creada: hoyISO() });
+  guardar(); const inp = $('tRapida'); if (inp) inp.focus();
+}
+function marcarTarea(id) {
+  if (CLIENTE) return;
+  const t = db.tareas.find(x => x.id === id);
+  t.estado = t.estado === 'hecha' ? 'pendiente' : 'hecha';
+  guardar(); toast(t.estado === 'hecha' ? '✓ Tarea hecha' : 'Tarea reabierta');
+}
+
+// ═══ Campanita ═══
+// Alertas calculadas a partir de piezas y tareas
+function alertas(marca) {
+  const hoy = hoyISO(), en3 = sumarDias(3), out = [];
+  const ps = db.piezas.filter(p => !marca || p.marca === marca);
+  ps.forEach(p => {
+    const m = marcaDe(p.marca), cuando = p.pub ? fCorta(p.pub) + (p.hora ? ' · ' + hora12(p.hora) : '') : '';
+    if (CLIENTE) {
+      if (p.estado === 'revision') out.push({ id: 'rev-' + p.id, nivel: 'ambar', ic: '👀', txt: `“${p.titulo}” está lista para que la revises`, sub: cuando, pieza: p.id });
+      return;
+    }
+    if (atrasada(p)) out.push({ id: 'atr-' + p.id, nivel: 'rojo', ic: '⚠️', txt: `${m.nombre}: “${p.titulo}” debía salir el ${fCorta(p.pub)}`, sub: 'Sigue en ' + (ESTADOS.find(e => e.id === p.estado) || {}).nombre, pieza: p.id });
+    else if (p.pub && p.pub <= en3 && !PROGRAMADAS.includes(p.estado)) out.push({ id: 'prox-' + p.id + p.pub, nivel: 'rojo', ic: '⏰', txt: `${m.nombre}: “${p.titulo}” sale ${p.pub === hoy ? 'hoy' : 'el ' + cuando} y no está programada`, sub: faltantes(p).length ? 'Falta: ' + faltantes(p).join(', ') : 'Lista para programar', pieza: p.id });
+    if (p.estado === 'revision') out.push({ id: 'rev-' + p.id, nivel: 'ambar', ic: '⏳', txt: `${m.nombre}: “${p.titulo}” espera aprobación del cliente`, sub: cuando, pieza: p.id });
+  });
+  ps.forEach(p => {
+    const m = marcaDe(p.marca), r = m.sla && calcTiempos(p);
+    if (!r || !r.limite) return;
+    const falta = habilesEntre(hoy, r.limite.fecha);
+    if (CLIENTE) {
+      if (r.limite.tipo === 'comentarios' && falta >= 0) out.push({ id: 'com-' + p.id + r.limite.fecha, nivel: 'ambar', ic: '💬', txt: `Tienes hasta el ${fLarga(r.limite.fecha)} para enviar comentarios de “${p.titulo}”`, sub: 'Después de esa fecha, la ronda de cambios corre desde que se reciben', pieza: p.id });
+    } else if (r.limite.tipo !== 'comentarios' && falta <= 1) {
+      out.push({ id: 'sla-' + p.id + r.limite.fecha, nivel: falta < 0 ? 'rojo' : 'ambar', ic: '⏱️', txt: `${m.nombre}: ${r.limite.nombre.toLowerCase()} de “${p.titulo}” ${falta < 0 ? 'vencida desde el ' + fLarga(r.limite.fecha) : falta === 0 ? 'vence hoy' : 'vence mañana (' + fLarga(r.limite.fecha) + ')'}`, sub: 'Acuerdo de tiempos', pieza: p.id });
+    }
+  });
+  if (!CLIENTE) db.tareas.filter(t => (!marca || t.marca === marca) && t.estado !== 'hecha' && t.vence && t.vence <= hoy).forEach(t => {
+    out.push({ id: 'tar-' + t.id + t.vence, nivel: t.vence < hoy ? 'rojo' : 'azul', ic: '✅', txt: `${marcaDe(t.marca).nombre}: tarea “${t.titulo}” ${t.vence < hoy ? 'vencida el ' + fCorta(t.vence) : 'vence hoy'}`, sub: t.resp ? 'Responsable: ' + t.resp : 'Sin responsable', tarea: t.id });
+  });
+  const peso = { rojo: 0, ambar: 1, azul: 2, verde: 3 };
+  return out.sort((a, b) => peso[a.nivel] - peso[b.nivel]);
+}
+function vistas() { try { return new Set(JSON.parse(localStorage.getItem('hc-vistas-' + (sesion && sesion.id)) || '[]')); } catch (e) { return new Set(); } }
+function renderCampana() {
+  const lista = alertas(CLIENTE || (ruta.vista === 'marca' ? ruta.marca : null)), vis = vistas();
+  const nuevas = lista.filter(a => !vis.has(a.id)).length;
+  $('campanaN').hidden = !nuevas; $('campanaN').textContent = nuevas;
+  $('listaCampana').innerHTML = lista.length ? lista.map(a => `<div class="notif-i ${vis.has(a.id) ? '' : 'nuevo'}" onclick="${a.pieza ? `verPieza('${a.pieza}')` : `abrirTarea('${a.tarea}')`}">
+      <span class="ni n-${a.nivel}">${a.ic}</span><div>${esc(a.txt)}<small>${esc(a.sub)}</small></div></div>`).join('')
+    : '<div class="notif-vacio">🎉 Todo al día. Sin pendientes urgentes.</div>';
+}
+function toggleCampana(e) { e.stopPropagation(); $('panelCampana').hidden = !$('panelCampana').hidden; }
+function marcarVistas() {
+  const ids = alertas(CLIENTE || (ruta.vista === 'marca' ? ruta.marca : null)).map(a => a.id);
+  const vis = vistas(); ids.forEach(i => vis.add(i));
+  localStorage.setItem('hc-vistas-' + sesion.id, JSON.stringify([...vis]));
+  renderCampana();
+}
+document.addEventListener('click', e => { if (!e.target.closest('#panelCampana')) $('panelCampana').hidden = true; });
+
+// ═══ Acuerdo de tiempos: historial por pieza ═══
+const EVENTOS = {
+  grabacion: { ic: '🎥', nombre: 'Grabación con tomas completas' },
+  reinicio: { ic: '⏸️', nombre: 'Se movió el plazo' },
+  entrega: { ic: '📤', nombre: 'Primera entrega' },
+  comentarios: { ic: '💬', nombre: 'El cliente pidió cambios' },
+  entregaCambios: { ic: '🔁', nombre: 'Entrega de cambios' },
+  aprobada: { ic: '✅', nombre: 'Aprobada por el cliente' },
+  publicada: { ic: '📣', nombre: 'Publicada' },
+  nota: { ic: '📝', nombre: 'Nota' }
+};
+// Al registrar un evento, el estado de la pieza se actualiza solo
+const EVENTO_ESTADO = { grabacion: 'edicion', entrega: 'revision', comentarios: 'edicion', entregaCambios: 'revision', aprobada: 'aprobada', publicada: 'publicada' };
+function historial(p) {
+  const h = (p.historial || []).slice();
+  if (p.grab && !h.some(e => e.tipo === 'grabacion')) h.push({ id: '_grab', tipo: 'grabacion', fecha: p.grab, nota: '', auto: true });
+  return h.sort((a, b) => a.fecha.localeCompare(b.fecha) || (a.reg || '').localeCompare(b.reg || ''));
+}
+// Calcula límites y cumplimiento a partir del historial
+// Plazo de primera entrega: más largo si la parrilla de la pieza incluye adicionales
+function diasEntrega(p, sla) {
+  const conAdic = sla.entregaAdic && db.piezas.some(x => x.marca === p.marca && x.adicional && (p.proyecto ? x.proyecto === p.proyecto : !x.proyecto || x.grab === p.grab));
+  return conAdic ? sla.entregaAdic : sla.entrega;
+}
+function calcTiempos(p) {
+  const sla = marcaDe(p.marca).sla; if (!sla) return null;
+  const h = historial(p), hoy = hoyISO(), filas = [];
+  const grab = h.filter(e => e.tipo === 'grabacion').pop();
+  if (!grab) return { h, filas, estado: ['publicada', 'programada', 'aprobada'].includes(p.estado) ? { txt: 'Sin historial de tiempos registrado', nivel: 'gris', corto: 'Sin historial' } : { txt: 'Sin grabación registrada: el plazo aún no empieza', nivel: 'gris', corto: 'Sin grabar' } };
+  let base = grab.fecha;
+  h.filter(e => e.tipo === 'reinicio' && e.fecha > base).forEach(e => base = e.fecha);
+  const dias = diasEntrega(p, sla), lim1 = sumarHabiles(base, dias);
+  const ent = h.find(e => e.tipo === 'entrega' && e.fecha >= grab.fecha);
+  const nota = {}; let limite = null, estado, ronda = 0, aTiempo = { entrega: null, rondas: [] };
+  if (!ent) {
+    const falta = habilesEntre(hoy, lim1);
+    limite = { tipo: 'entrega', nombre: 'Primera entrega', fecha: lim1 };
+    estado = falta >= 0
+      ? { txt: `En edición · primera entrega a más tardar el ${fLarga(lim1)} (${falta === 0 ? 'vence hoy' : 'faltan ' + dh(falta)})`, nivel: falta <= 1 ? 'ambar' : 'azul', corto: 'Entrega ' + fCorta(lim1) }
+      : { txt: `Primera entrega vencida: debía entregarse el ${fLarga(lim1)} (${dh(-falta)} de retraso)`, nivel: 'rojo', corto: 'Vencida ' + fCorta(lim1) };
+    filas.push({ limite: true, txt: `Primera entrega · ${dh(dias)}${dias !== sla.entrega ? ' (parrilla con adicionales)' : ''} · a más tardar`, fecha: lim1 });
+    return { h, filas, estado, limite, nota, aTiempo };
+  }
+  const d1 = habilesEntre(lim1, ent.fecha);
+  nota[ent.id] = { txt: d1 <= 0 ? `✓ A tiempo · límite ${fLarga(lim1)} (plazo de ${dh(dias)})${d1 < 0 ? ' · ' + dh(-d1) + ' antes' : ''}` : `✗ ${dh(d1)} tarde · límite ${fLarga(lim1)}`, cls: d1 <= 0 ? 'ok' : 'mal' };
+  aTiempo.entrega = d1 <= 0;
+  // Rondas: cada pedido de cambios abre una ronda con su propio plazo
+  let ultimaEntrega = ent.fecha, abierta = null;
+  h.filter(e => e.fecha >= ent.fecha && e !== ent).forEach(e => {
+    if (e.tipo === 'comentarios' && !abierta) {
+      ronda++;
+      const limCom = sumarHabiles(ultimaEntrega, sla.comentarios), fuera = e.fecha > limCom;
+      const limR = sumarHabiles(e.fecha, sla.cambios), extra = ronda > sla.rondas;
+      abierta = { lim: limR, ronda };
+      nota[e.id] = { txt: `Ronda ${ronda}${extra ? ' · adicional, se cotiza aparte' : ' · incluida'} · ${fuera ? `comentarios fuera de plazo (límite ${fLarga(limCom)}), la ronda corre desde que se recibieron` : 'comentarios dentro del plazo'} · entrega a más tardar ${fLarga(limR)}`, cls: fuera || extra ? 'mal' : 'info' };
+    } else if (e.tipo === 'entregaCambios' && abierta) {
+      const d = habilesEntre(abierta.lim, e.fecha);
+      nota[e.id] = { txt: d <= 0 ? `✓ Ronda ${abierta.ronda} a tiempo · límite ${fLarga(abierta.lim)}` : `✗ Ronda ${abierta.ronda}: ${dh(d)} tarde · límite ${fLarga(abierta.lim)}`, cls: d <= 0 ? 'ok' : 'mal' };
+      aTiempo.rondas.push(d <= 0);
+      ultimaEntrega = e.fecha; abierta = null;
+    }
+  });
+  const aprob = h.find(e => e.tipo === 'aprobada' && e.fecha >= ent.fecha), pub = h.find(e => e.tipo === 'publicada');
+  if (pub) estado = { txt: `Publicada el ${fLarga(pub.fecha)}`, nivel: 'verde', corto: 'Publicada' };
+  else if (aprob) estado = { txt: `Aprobada el ${fLarga(aprob.fecha)}${ronda ? ' después de ' + ronda + (ronda === 1 ? ' ronda' : ' rondas') + ' de cambios' : ' sin cambios'}`, nivel: 'verde', corto: 'Aprobada' };
+  else if (abierta) {
+    const falta = habilesEntre(hoy, abierta.lim);
+    limite = { tipo: 'cambios', nombre: 'Ronda ' + abierta.ronda + ' de cambios', fecha: abierta.lim };
+    filas.push({ limite: true, txt: `Entrega de la ronda ${abierta.ronda} · a más tardar`, fecha: abierta.lim });
+    estado = falta >= 0 ? { txt: `Ronda ${abierta.ronda} de cambios · entrega a más tardar el ${fLarga(abierta.lim)}`, nivel: falta <= 1 ? 'ambar' : 'azul', corto: 'Cambios ' + fCorta(abierta.lim) }
+      : { txt: `Ronda ${abierta.ronda} de cambios vencida desde el ${fLarga(abierta.lim)}`, nivel: 'rojo', corto: 'Cambios vencidos' };
+  } else {
+    const limCom = sumarHabiles(ultimaEntrega, sla.comentarios);
+    limite = { tipo: 'comentarios', nombre: 'Plazo para comentarios', fecha: limCom };
+    filas.push({ limite: true, txt: 'Plazo del cliente para comentarios · hasta', fecha: limCom });
+    estado = hoy <= limCom ? { txt: `Entregada · el cliente tiene hasta el ${fLarga(limCom)} para pedir cambios`, nivel: 'azul', corto: 'Esperando comentarios' }
+      : { txt: `Entregada · el plazo para comentarios venció el ${fLarga(limCom)} sin cambios`, nivel: 'verde', corto: 'Entregada sin cambios' };
+  }
+  return { h, filas, estado, limite, nota, aTiempo };
+}
+function miniTiempos(p) {
+  const r = calcTiempos(p); if (!r) return '';
+  const ent = r.aTiempo && r.aTiempo.entrega;
+  return `<span class="sla-mini ${r.estado.nivel}">${esc(r.estado.corto)}</span>${ent === true ? ' <span class="sla-mini verde" title="Primera entrega a tiempo">✓</span>' : ent === false ? ' <span class="sla-mini rojo" title="Primera entrega tarde">tarde</span>' : ''}`;
+}
+function pintarTiempos(p) {
+  const m = marcaDe(p.marca), r = calcTiempos(p);
+  if (!r) { $('vTiempos').innerHTML = ''; return; }
+  const items = r.h.map(e => ({ e, f: e.fecha })).concat(r.filas.map(x => ({ x, f: x.fecha })))
+    .sort((a, b) => a.f.localeCompare(b.f) || (a.x ? 1 : -1));
+  $('vTiempos').innerHTML = `<div class="campo" style="margin-top:6px"><label>Historial y tiempos · acuerdo ${esc(m.nombre)}</label></div>
+    <div class="sla-est ${r.estado.nivel}">⏱️ ${esc(r.estado.txt)}</div>
+    <div class="hist">${items.map(({ e, x }) => {
+      if (x) return `<div class="hev limite"><b>${esc(x.txt)}</b> <span class="hf">${fLarga(x.fecha)}</span></div>`;
+      const ev = EVENTOS[e.tipo] || EVENTOS.nota, n = r.nota[e.id];
+      return `<div class="hev ${n ? n.cls === 'ok' ? 'ok' : n.cls === 'mal' ? 'mal' : '' : ''}">
+        <b>${ev.ic} ${ev.nombre}</b> <span class="hf">${fLarga(e.fecha)}${e.por ? ' · ' + esc(e.por) : ''}${e.auto ? ' · desde la fecha de grabación de la pieza' : ''}</span>
+        ${e.nota ? `<div class="hn">${esc(e.nota)}</div>` : ''}
+        ${n ? `<div class="hc ${n.cls}">${esc(n.txt)}</div>` : ''}
+        ${!CLIENTE && !e.auto ? `<button class="hx" title="Borrar del historial" onclick="borrarEvento('${p.id}','${e.id}')">×</button>` : ''}
+      </div>`; }).join('') || '<div class="hev limite"><span class="hf">Sin registros todavía.</span></div>'}</div>
+    ${CLIENTE ? '' : `<div class="registrar">
+      <select id="evTipo">${Object.entries(EVENTOS).map(([k, v]) => `<option value="${k}">${v.ic} ${v.nombre}</option>`).join('')}</select>
+      <input type="date" id="evFecha" value="${hoyISO()}">
+      <textarea id="evNota" placeholder="Detalle: qué se entregó, qué cambios pidieron, por qué se movió el plazo…"></textarea>
+      <button class="btn sm" onclick="registrarEvento('${p.id}')">+ Registrar en el historial</button>
+    </div>`}`;
+}
+function registrarEvento(id) {
+  const p = db.piezas.find(x => x.id === id), tipo = $('evTipo').value, f = $('evFecha').value;
+  if (!f) { toast('Pon la fecha'); return; }
+  p.historial = p.historial || [];
+  p.historial.push({ id: uid(), tipo, fecha: f, nota: $('evNota').value.trim(), por: sesion.nombre, reg: new Date().toISOString() });
+  if (tipo === 'grabacion') p.grab = f;
+  if (EVENTO_ESTADO[tipo]) p.estado = EVENTO_ESTADO[tipo];
+  guardar(); verPieza(id); toast('Registrado en el historial');
+}
+function borrarEvento(pid, eid) {
+  if (!confirm('¿Borrar este registro del historial?')) return;
+  const p = db.piezas.find(x => x.id === pid);
+  p.historial = (p.historial || []).filter(e => e.id !== eid);
+  guardar(); verPieza(pid);
+}
+
+// ═══ Plan activo y términos ═══
+function textoFormato(t) {
+  // "# título" → subtítulo · "- ítem" → viñeta · resto → párrafo
+  let html = '', enLista = false;
+  (t || '').split('\n').forEach(l => {
+    const x = l.trim(); if (!x) return;
+    if (x.startsWith('- ')) { if (!enLista) { html += '<ul>'; enLista = true; } html += `<li>${esc(x.slice(2))}</li>`; return; }
+    if (enLista) { html += '</ul>'; enLista = false; }
+    html += x.startsWith('# ') ? `<h4>${esc(x.slice(2))}</h4>` : `<p>${esc(x)}</p>`;
+  });
+  return html + (enLista ? '</ul>' : '');
+}
+function renderPlan(m) {
+  const sla = m.sla;
+  // Cumplimiento con base en el historial de las piezas
+  const rs = db.piezas.filter(p => p.marca === m.id).map(calcTiempos).filter(r => r && r.aTiempo);
+  const ent = rs.filter(r => r.aTiempo.entrega !== null), entOk = ent.filter(r => r.aTiempo.entrega).length;
+  const ron = rs.flatMap(r => r.aTiempo.rondas), ronOk = ron.filter(Boolean).length;
+  $('contenido').innerHTML = `<section class="sec"><div class="wrap">
+    <div class="toolbar"><div class="sec-label" style="flex:1;margin:0">Plan activo y términos</div>
+      <button class="btn sm solo-equipo" onclick="abrirPlan('${m.id}')">✎ Editar plan y términos</button></div>
+    <div class="reglas"><h3>📌 Plan activo</h3>${m.plan ? textoFormato(m.plan) : '<p class="sin-drive">Sin plan registrado todavía.</p>'}</div>
+    ${sla ? `<div class="reglas"><h3>⏱️ Acuerdo de tiempos de entrega</h3>
+      <ul>
+        <li><b>Primera entrega:</b> hasta ${sla.entrega} días hábiles después de la grabación${sla.entregaAdic ? ` sin adicionales; ${sla.entregaAdic} días hábiles cuando la parrilla incluye adicionales` : ''}. El plazo empieza el primer día hábil después de grabar, con la parrilla aprobada, las tomas completas y los insumos entregados.</li>
+        <li><b>Comentarios del cliente:</b> dentro de ${sla.comentarios} días hábiles después de cada entrega. Si llegan después, la ronda de cambios corre desde que se reciben.</li>
+        <li><b>Ronda de cambios:</b> ${sla.rondas} incluida${sla.rondas === 1 ? '' : 's'} por pieza, se entrega en hasta ${sla.cambios} días hábiles. Las rondas adicionales se cotizan aparte y suman ${sla.cambios} días hábiles.</li>
+        <li><b>Días hábiles:</b> de lunes a viernes, sin festivos de Colombia.</li>
+      </ul>
+      <div class="kpis">
+        <div class="kpi"><b>${ent.length ? entOk + ' / ' + ent.length : '—'}</b><span>primeras entregas a tiempo</span></div>
+        <div class="kpi"><b>${ron.length ? ronOk + ' / ' + ron.length : '—'}</b><span>rondas de cambios a tiempo</span></div>
+        <div class="kpi"><b>${rs.filter(r => r.estado && r.estado.nivel === 'rojo').length}</b><span>plazos vencidos hoy</span></div>
+      </div>
+      <p class="nota">Cada pieza tiene su historial con fechas en la Parrilla: abre la pieza para verlo.</p></div>` : ''}
+    <div class="reglas"><h3>📄 Términos y condiciones ${m.terminosEstado ? `<span class="estado e-revision">${esc(m.terminosEstado)}</span>` : ''}</h3>${m.terminos ? textoFormato(m.terminos) : '<p class="sin-drive">Sin términos registrados todavía.</p>'}</div>
+  </div></section>`;
+}
+function abrirPlan(id) {
+  const m = marcaDe(id); editMarca = id;
+  $('plPlan').value = m.plan || ''; $('plTerm').value = m.terminos || ''; $('plEstado').value = m.terminosEstado || '';
+  $('mPlan').classList.add('on');
+}
+function guardarPlan() {
+  Object.assign(marcaDe(editMarca), { plan: $('plPlan').value, terminos: $('plTerm').value, terminosEstado: $('plEstado').value.trim() });
+  cerrar('mPlan'); guardar(); toast('Plan y términos guardados');
+}
+
+// ═══ Métricas: rendimiento de las piezas y públicos ═══
+// Interacciones = me gusta + comentarios + compartidos + guardados (nunca post_engagement de Meta)
+function interacciones(x) { return (+x.likes || 0) + (+x.comentarios || 0) + (+x.compartidos || 0) + (+x.guardados || 0); }
+function tasa(x) { return x.alcance ? interacciones(x) / x.alcance * 100 : 0; }
+function num(n) { return Math.round(n || 0).toLocaleString('es-CO'); }
+function pct(n) { return (n || 0).toLocaleString('es-CO', { maximumFractionDigits: 1 }) + '%'; }
+function variacion(act, ant) {
+  if (!ant) return '';
+  const v = (act - ant) / ant * 100;
+  return `<span class="var ${v > 0.5 ? 'sube' : v < -0.5 ? 'baja' : 'igual'}">${v > 0.5 ? '▲' : v < -0.5 ? '▼' : '='} ${pct(Math.abs(v))} vs. mes anterior</span>`;
+}
+function metricasMes(m, mes) { return (m.metricas || []).filter(x => x.fecha && x.fecha.startsWith(mes)); }
+function mesAnterior(mes) { const d = fecha(mes + '-01'); d.setMonth(d.getMonth() - 1); return iso(d).slice(0, 7); }
+const TIPO_MET = { reel: 'Reel', carrusel: 'Carrusel', estatica: 'Estática', historia: 'Historia', tiktok: 'TikTok' };
+
+function barras(filas, fmt) {
+  const max = Math.max(...filas.map(f => f.v), 0) || 1;
+  return `<div class="barras">${filas.map((f, i) => `<div class="bar-f ${i === 0 ? 'top' : ''}">
+    <span class="lab" title="${esc(f.lab)}">${esc(f.lab)}</span><span class="pista"><i style="width:${f.v / max * 100}%"></i></span><span class="val">${fmt(f.v)}</span>
+    <span class="tip">${esc(f.tip || f.lab + ': ' + fmt(f.v))}</span></div>`).join('')}</div>`;
+}
+function promedioPor(lista, clave) {
+  const g = {};
+  lista.forEach(x => { const k = clave(x); if (k == null) return; (g[k] = g[k] || []).push(x); });
+  return Object.entries(g).map(([k, xs]) => ({ k, n: xs.length, alcance: xs.reduce((s, x) => s + (+x.alcance || 0), 0) / xs.length, tasa: xs.reduce((s, x) => s + tasa(x), 0) / xs.length }));
+}
+function franja(h) { if (!h) return null; const H = +h.split(':')[0]; return H < 12 ? 'Mañana (antes de 12)' : H < 18 ? 'Tarde (12 a 6 p. m.)' : 'Noche (desde 6 p. m.)'; }
+
+function oportunidades(m, xs, ant) {
+  const out = [], ER = xs.reduce((s, x) => s + tasa(x), 0) / xs.length;
+  const porTipo = promedioPor(xs, x => TIPO_MET[x.tipo] || null).filter(g => g.n >= 1).sort((a, b) => b.tasa - a.tasa);
+  if (porTipo.length > 1) out.push({ ic: '🧩', txt: `<b>${porTipo[0].k}</b> es el formato con mejor tasa de interacción (${pct(porTipo[0].tasa)}) y <b>${porTipo[porTipo.length - 1].k}</b> el más bajo (${pct(porTipo[porTipo.length - 1].tasa)}). Vale la pena darle más espacio a ${porTipo[0].k.toLowerCase()} en la próxima parrilla.` });
+  const porDia = promedioPor(xs, x => DIAS[fecha(x.fecha).getDay()]).sort((a, b) => b.tasa - a.tasa);
+  if (porDia.length > 2) out.push({ ic: '📅', txt: `Los <b>${porDia[0].k}</b> funcionan mejor (${pct(porDia[0].tasa)} de interacción en promedio). Programa ahí las piezas más importantes.` });
+  const porHora = promedioPor(xs, x => franja(x.hora)).sort((a, b) => b.alcance - a.alcance);
+  if (porHora.length > 1) out.push({ ic: '🕖', txt: `En la <b>${porHora[0].k.toLowerCase()}</b> se logra más alcance (${num(porHora[0].alcance)} cuentas por publicación).` });
+  const bajas = xs.filter(x => tasa(x) < ER * 0.5);
+  if (bajas.length) out.push({ ic: '🔎', txt: `<b>${bajas.length} ${bajas.length === 1 ? 'publicación quedó' : 'publicaciones quedaron'}</b> por debajo de la mitad del promedio: ${bajas.slice(0, 3).map(x => '“' + esc(nombreMet(x)) + '”').join(', ')}. Revisa el gancho de los primeros segundos y el texto de portada.` });
+  const g = xs.reduce((s, x) => s + (+x.guardados || 0), 0), c = xs.reduce((s, x) => s + (+x.compartidos || 0), 0), l = xs.reduce((s, x) => s + (+x.likes || 0), 0);
+  if (l && (g + c) / l < 0.05) out.push({ ic: '💾', txt: 'Se guarda y se comparte poco frente a los me gusta. Contenido útil (tips, listas, precios, “guárdalo para después”) sube los guardados, que son la señal que más empuja el alcance.' });
+  const plan = +m.cupo || 0;
+  if (plan && xs.length < plan) out.push({ ic: '📌', txt: `Se midieron <b>${xs.length} de ${plan}</b> publicaciones del plan este mes. Completa las que faltan para que la lectura sea justa.` });
+  if (ant.length) {
+    const aA = ant.reduce((s, x) => s + (+x.alcance || 0), 0) / ant.length, aH = xs.reduce((s, x) => s + (+x.alcance || 0), 0) / xs.length;
+    if (aH < aA * 0.85) out.push({ ic: '📉', txt: `El alcance promedio por publicación bajó ${pct((aA - aH) / aA * 100)} frente al mes anterior. Revisa frecuencia, horarios y si se repitieron formatos.` });
+  }
+  return out;
+}
+function nombreMet(x) { const pz = x.pieza && db.piezas.find(p => p.id === x.pieza); return pz ? pz.titulo : (x.desc || 'Publicación ' + fCorta(x.fecha)).slice(0, 60); }
+
+function renderMetricas(m) {
+  const mes = mesRef(), xs = metricasMes(m, mes), ant = metricasMes(m, mesAnterior(mes));
+  const suma = (l, k) => l.reduce((s, x) => s + (+x[k] || 0), 0);
+  const tot = l => ({ alcance: suma(l, 'alcance'), vistas: suma(l, 'vistas'), inter: l.reduce((s, x) => s + interacciones(x), 0), seg: suma(l, 'seguidores'), tasa: l.length ? l.reduce((s, x) => s + tasa(x), 0) / l.length : 0, n: l.length });
+  const T = tot(xs), A = tot(ant);
+  const pub = (m.publicos || {})[mes] || (m.publicos || {})[Object.keys(m.publicos || {}).sort().pop()];
+  const encabezado = `<div class="toolbar"><div class="sec-label" style="flex:1;margin:0">Métricas · ${nombreMes(planMes, true)}</div>
+      <button class="btn ghost sm" onclick="moverMes(-1)">◀</button><button class="btn ghost sm" onclick="moverMes(1)">▶</button>
+      <button class="btn sm solo-equipo" onclick="$('impCsv').click()">⬆ Importar CSV de Meta</button>
+      <button class="btn sm ghost solo-equipo" onclick="abrirMetrica()">+ A mano</button>
+      <button class="btn sm ghost solo-equipo" onclick="abrirPublicos('${m.id}')">👥 Públicos</button>
+      <input type="file" id="impCsv" accept=".csv" hidden onchange="importarCsv(event,'${m.id}')"></div>`;
+  if (!xs.length) {
+    $('contenido').innerHTML = `<section class="sec"><div class="wrap">${encabezado}
+      <div class="vacio">Aún no hay métricas de ${nombreMes(planMes).toLowerCase()}.${CLIENTE ? '' : `<br><br><b>Cómo cargarlas:</b> en Meta Business Suite ve a <b>Estadísticas → Contenido</b>, elige el mes y descarga el archivo con <b>Exportar datos (CSV)</b>. Luego súbelo con “⬆ Importar CSV de Meta”. Cada publicación se une sola con su pieza por la fecha.`}</div>
+      ${pub ? panelPublicos(pub, m) : ''}</div></section>`;
+    return;
+  }
+  const orden = xs.slice().sort((a, b) => tasa(b) - tasa(a));
+  const porTipo = promedioPor(xs, x => TIPO_MET[x.tipo] || 'Otro').sort((a, b) => b.tasa - a.tasa);
+  const porDia = promedioPor(xs, x => DIAS[fecha(x.fecha).getDay()]).sort((a, b) => b.tasa - a.tasa);
+  const ops = oportunidades(m, xs, ant);
+  $('contenido').innerHTML = `<section class="sec"><div class="wrap">${encabezado}
+    <div class="kpi-grid">
+      <div class="kpi2"><b>${num(T.alcance)}</b><span>cuentas alcanzadas (suma por publicación)</span>${variacion(T.alcance, A.alcance)}</div>
+      <div class="kpi2"><b>${num(T.vistas)}</b><span>visualizaciones</span>${variacion(T.vistas, A.vistas)}</div>
+      <div class="kpi2"><b>${num(T.inter)}</b><span>interacciones: me gusta, comentarios, compartidos y guardados</span>${variacion(T.inter, A.inter)}</div>
+      <div class="kpi2"><b>${pct(T.tasa)}</b><span>tasa de interacción promedio (interacciones ÷ alcance)</span>${variacion(T.tasa, A.tasa)}</div>
+      <div class="kpi2"><b>${num(T.seg)}</b><span>seguidores ganados desde las publicaciones</span>${variacion(T.seg, A.seg)}</div>
+      <div class="kpi2"><b>${T.n}${m.cupo ? ' <small style="font-size:1rem;color:var(--muted)">/ ' + m.cupo + '</small>' : ''}</b><span>publicaciones medidas</span></div>
+    </div>
+    <div class="panel" style="margin-bottom:16px"><h3>💡 Oportunidades de mejora</h3><p class="ayuda">Salen de comparar las publicaciones del mes entre sí y con el mes anterior.</p>
+      <div class="oport">${ops.length ? ops.map(o => `<div class="op"><span class="oi">${o.ic}</span><div>${o.txt}</div></div>`).join('') : '<div class="op"><span class="oi">✓</span><div>Con estos datos no aparecen alertas. Con más publicaciones medidas, la lectura es más precisa.</div></div>'}</div></div>
+    <div class="met-grid">
+      <div class="panel"><h3>Tasa de interacción por formato</h3><p class="ayuda">Promedio por publicación · pasa el cursor para ver el detalle</p>
+        ${barras(porTipo.map(g => ({ lab: g.k, v: g.tasa, tip: `${g.k}: ${pct(g.tasa)} · ${g.n} ${g.n === 1 ? 'publicación' : 'publicaciones'} · alcance prom. ${num(g.alcance)}` })), pct)}</div>
+      <div class="panel"><h3>Tasa de interacción por día</h3><p class="ayuda">Promedio por publicación según el día en que salió</p>
+        ${barras(porDia.map(g => ({ lab: g.k[0].toUpperCase() + g.k.slice(1), v: g.tasa, tip: `${g.k}: ${pct(g.tasa)} · ${g.n} ${g.n === 1 ? 'publicación' : 'publicaciones'}` })), pct)}</div>
+    </div>
+    <div class="panel" style="margin-bottom:16px"><h3>Rendimiento de cada pieza</h3><p class="ayuda">Ordenadas de mayor a menor tasa de interacción · clic para abrir la pieza</p>
+      <div style="overflow-x:auto"><table class="tabla met-tabla"><thead><tr><th>Publicación</th><th class="n">Alcance</th><th class="n col-opc">Vistas</th><th class="n">Interac.</th><th class="n">Tasa</th><th class="n col-opc">Guard.</th><th class="n col-opc">Compart.</th><th class="n col-opc">Seguid.</th></tr></thead><tbody>
+      ${orden.map(x => { const pz = x.pieza && db.piezas.find(p => p.id === x.pieza); return `<tr ${pz ? `onclick="verPieza('${pz.id}')"` : !CLIENTE ? `onclick="abrirMetrica('${x.id}')"` : ''}>
+        <td><div class="pieza-cel">${pz ? thumb(pz) : `<span class="thumb">${(FORMATOS[x.tipo] || FORMATOS.reel)[0]}</span>`}<div><div class="tit">${esc(nombreMet(x))}</div><div class="fecha">${TIPO_MET[x.tipo] || 'Publicación'} · ${fLarga(x.fecha)}${x.hora ? ' · ' + hora12(x.hora) : ''}${!pz && !CLIENTE ? ' · <span class="tarde" style="color:var(--muted)">sin pieza vinculada</span>' : ''}</div></div></div></td>
+        <td class="n">${num(x.alcance)}</td><td class="n col-opc">${num(x.vistas)}</td><td class="n">${num(interacciones(x))}</td><td class="n"><b>${pct(tasa(x))}</b></td>
+        <td class="n col-opc">${num(x.guardados)}</td><td class="n col-opc">${num(x.compartidos)}</td><td class="n col-opc">${num(x.seguidores)}</td></tr>`; }).join('')}
+      </tbody></table></div></div>
+    ${pub ? panelPublicos(pub, m) : (CLIENTE ? '' : `<div class="vacio">Agrega los datos de <b>públicos</b> (edad, género, ciudades y horas activas) con “👥 Públicos”. Están en Meta Business Suite → Estadísticas → Público.</div>`)}
+  </div></section>`;
+}
+function parseLista(t) { return (t || '').split(/\n|,/).map(l => l.split(':')).filter(a => a.length === 2 && a[0].trim()).map(([k, v]) => ({ lab: k.trim(), v: parseFloat(v.replace('%', '').replace(',', '.')) || 0 })); }
+function panelPublicos(pub, m) {
+  const edades = parseLista(pub.edades), ciudades = parseLista(pub.ciudades).sort((a, b) => b.v - a.v);
+  return `<div class="panel"><h3>👥 Públicos ${pub.mes ? '· ' + nombreMes(fecha(pub.mes + '-01'), true) : ''}</h3><p class="ayuda">Quiénes siguen la cuenta, según Meta Business Suite</p>
+    <div class="kpi-grid">
+      <div class="kpi2"><b>${num(pub.seguidores)}</b><span>seguidores${pub.nuevos ? ' · ' + (pub.nuevos > 0 ? '+' : '') + num(pub.nuevos) + ' este mes' : ''}</span></div>
+      <div class="kpi2"><b>${pub.mujeres ? pct(+pub.mujeres) : '—'}</b><span>mujeres · ${pub.hombres ? pct(+pub.hombres) : '—'} hombres</span></div>
+      <div class="kpi2"><b>${esc(pub.horas || '—')}</b><span>horas en que más se conectan</span></div>
+    </div>
+    <div class="met-grid" style="margin-bottom:0">
+      <div>${edades.length ? '<h3 style="font-size:.95rem;margin-bottom:10px">Edad</h3>' + barras(edades, pct) : ''}</div>
+      <div>${ciudades.length ? '<h3 style="font-size:.95rem;margin-bottom:10px">Ciudades principales</h3>' + barras(ciudades, pct) : ''}</div>
+    </div></div>`;
+}
+function pintarResultados(p) {
+  const m = marcaDe(p.marca), x = (m.metricas || []).find(r => r.pieza === p.id);
+  $('vResultados').innerHTML = x ? `<div class="campo" style="margin-top:6px"><label>📊 Resultados</label></div>
+    <div class="resultado"><div><b>${num(x.alcance)}</b><span>alcance</span></div><div><b>${num(x.vistas)}</b><span>visualizaciones</span></div><div><b>${pct(tasa(x))}</b><span>tasa de interacción</span></div>
+    <div><b>${num(interacciones(x))}</b><span>interacciones</span></div><div><b>${num(x.guardados)}</b><span>guardados</span></div><div><b>${num(x.compartidos)}</b><span>compartidos</span></div></div>` : '';
+}
+
+// ─── Importar el CSV que exporta Meta Business Suite ───
+function leerCsv(t) {
+  const filas = []; let f = [], c = '', q = false;
+  for (let i = 0; i < t.length; i++) {
+    const ch = t[i];
+    if (q) { if (ch === '"') { if (t[i + 1] === '"') { c += '"'; i++; } else q = false; } else c += ch; }
+    else if (ch === '"') q = true;
+    else if (ch === ',' || ch === ';') { f.push(c); c = ''; }
+    else if (ch === '\n') { f.push(c); filas.push(f); f = []; c = ''; }
+    else if (ch !== '\r') c += ch;
+  }
+  if (c || f.length) { f.push(c); filas.push(f); }
+  return filas.filter(r => r.some(x => x.trim()));
+}
+const sinTilde = t => t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+const COLUMNAS = {
+  fecha: ['publish time', 'hora de publicacion', 'fecha de publicacion', 'publicado', 'date'],
+  desc: ['description', 'descripcion', 'title', 'titulo'],
+  link: ['permalink', 'enlace permanente', 'enlace'],
+  tipo: ['post type', 'tipo de publicacion', 'tipo'],
+  alcance: ['reach', 'alcance', 'cuentas alcanzadas'],
+  vistas: ['views', 'visualizaciones', 'reproducciones', 'impressions', 'impresiones'],
+  likes: ['likes', 'me gusta', 'reactions', 'reacciones'],
+  comentarios: ['comments', 'comentarios'],
+  compartidos: ['shares', 'veces que se compartio', 'compartidos', 'compartido'],
+  guardados: ['saves', 'veces que se guardo', 'guardados', 'guardado'],
+  seguidores: ['follows', 'seguimientos', 'seguidores']
+};
+function fechaMeta(v) {
+  // Meta exporta "MM/DD/YYYY HH:mm"; si el primer número pasa de 12, viene como DD/MM
+  let m = v.match(/(\d{4})-(\d{2})-(\d{2})[ T]?(\d{2}:\d{2})?/);
+  if (m) return { fecha: `${m[1]}-${m[2]}-${m[3]}`, hora: m[4] || '' };
+  m = v.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})\s*(\d{1,2}:\d{2})?/);
+  if (!m) return null;
+  let [a, b] = [+m[1], +m[2]]; const mes = a > 12 ? b : a, dia = a > 12 ? a : b;
+  return { fecha: `${m[3]}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`, hora: m[4] ? m[4].padStart(5, '0') : '' };
+}
+function tipoMeta(v) { v = sinTilde(v || ''); return /reel|video/.test(v) ? 'reel' : /carrus|carousel|album/.test(v) ? 'carrusel' : /histor|story/.test(v) ? 'historia' : 'estatica'; }
+// Une la métrica con la pieza de la marca publicada ese día (la de hora más cercana)
+function vincular(m, x) {
+  const c = db.piezas.filter(p => p.marca === m.id && p.pub === x.fecha);
+  if (!c.length) return '';
+  const min = h => h ? +h.split(':')[0] * 60 + +h.split(':')[1] : 0;
+  return c.sort((a, b) => Math.abs(min(a.hora) - min(x.hora)) - Math.abs(min(b.hora) - min(x.hora)))[0].id;
+}
+function importarCsv(ev, marcaId) {
+  const file = ev.target.files[0]; ev.target.value = ''; if (!file) return;
+  file.text().then(t => {
+    const filas = leerCsv(t.replace(/^\uFEFF/, ''));
+    const cab = filas[0].map(sinTilde), idx = {};
+    Object.entries(COLUMNAS).forEach(([k, ns]) => { const i = cab.findIndex(h => ns.some(n => h === n || h.startsWith(n))); if (i >= 0) idx[k] = i; });
+    if (idx.fecha == null || idx.alcance == null) { toast('No reconozco el archivo: necesita columnas de fecha y alcance'); return; }
+    const m = marcaDe(marcaId); m.metricas = m.metricas || [];
+    let nuevas = 0, act = 0, unidas = 0;
+    filas.slice(1).forEach(r => {
+      const f = fechaMeta(r[idx.fecha] || ''); if (!f) return;
+      const n = k => idx[k] != null ? parseFloat(String(r[idx[k]]).replace(/[^\d.-]/g, '')) || 0 : 0;
+      const x = { fecha: f.fecha, hora: f.hora, desc: idx.desc != null ? r[idx.desc] : '', link: idx.link != null ? r[idx.link] : '', tipo: tipoMeta(idx.tipo != null ? r[idx.tipo] : ''),
+        alcance: n('alcance'), vistas: n('vistas'), likes: n('likes'), comentarios: n('comentarios'), compartidos: n('compartidos'), guardados: n('guardados'), seguidores: n('seguidores') };
+      const prev = m.metricas.find(y => (x.link && y.link === x.link) || (y.fecha === x.fecha && y.hora === x.hora && y.desc === x.desc));
+      if (prev) { Object.assign(prev, x); act++; } else { x.id = uid(); x.pieza = vincular(m, x); if (x.pieza) unidas++; m.metricas.push(x); nuevas++; }
+    });
+    guardar();
+    toast(`${nuevas} publicaciones nuevas, ${act} actualizadas · ${unidas} unidas a su pieza`);
+  }).catch(() => toast('No pude leer el archivo'));
+}
+
+// ─── Métrica a mano ───
+let editMet = null;
+function abrirMetrica(id) {
+  const m = marcaDe(ruta.marca); editMet = id || null;
+  const x = id ? m.metricas.find(r => r.id === id) : { fecha: hoyISO(), tipo: 'reel' };
+  $('xPieza').innerHTML = '<option value="">Sin vincular</option>' + db.piezas.filter(p => p.marca === m.id).map(p => `<option value="${p.id}">${esc(p.titulo)}${p.pub ? ' · ' + fCorta(p.pub) : ''}</option>`).join('');
+  $('xTipo').innerHTML = Object.entries(TIPO_MET).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
+  ['fecha', 'hora', 'tipo', 'pieza', 'desc', 'alcance', 'vistas', 'likes', 'comentarios', 'compartidos', 'guardados', 'seguidores'].forEach(k => $('x' + k[0].toUpperCase() + k.slice(1)).value = x[k] ?? '');
+  $('xBorrar').style.display = id ? '' : 'none';
+  $('mMetrica').classList.add('on');
+}
+function guardarMetrica() {
+  const m = marcaDe(ruta.marca); m.metricas = m.metricas || [];
+  const v = k => $('x' + k[0].toUpperCase() + k.slice(1)).value;
+  if (!v('fecha')) { toast('Pon la fecha de publicación'); return; }
+  const x = { fecha: v('fecha'), hora: v('hora'), tipo: v('tipo'), pieza: v('pieza'), desc: v('desc') };
+  ['alcance', 'vistas', 'likes', 'comentarios', 'compartidos', 'guardados', 'seguidores'].forEach(k => x[k] = +v(k) || 0);
+  if (editMet) Object.assign(m.metricas.find(r => r.id === editMet), x); else m.metricas.push({ id: uid(), ...x });
+  cerrar('mMetrica'); guardar(); toast('Métricas guardadas');
+}
+function borrarMetrica() {
+  if (!confirm('¿Borrar estas métricas?')) return;
+  const m = marcaDe(ruta.marca); m.metricas = m.metricas.filter(r => r.id !== editMet);
+  cerrar('mMetrica'); guardar();
+}
+// ─── Públicos (por mes) ───
+function abrirPublicos(id) {
+  const m = marcaDe(id), mes = mesRef(), pb = (m.publicos || {})[mes] || {};
+  $('qMes').value = mes;
+  ['seguidores', 'nuevos', 'mujeres', 'hombres', 'horas', 'edades', 'ciudades'].forEach(k => $('q' + k[0].toUpperCase() + k.slice(1)).value = pb[k] ?? '');
+  $('mPublicos').classList.add('on');
+}
+function guardarPublicos() {
+  const m = marcaDe(ruta.marca), mes = $('qMes').value || mesRef();
+  const v = k => $('q' + k[0].toUpperCase() + k.slice(1)).value;
+  m.publicos = m.publicos || {};
+  m.publicos[mes] = { mes, seguidores: +v('seguidores') || 0, nuevos: +v('nuevos') || 0, mujeres: v('mujeres'), hombres: v('hombres'), horas: v('horas').trim(), edades: v('edades'), ciudades: v('ciudades') };
+  cerrar('mPublicos'); guardar(); toast('Públicos guardados');
+}
+
+// ═══ Marcas por solicitudes: contenidos pedidos y su gestión ═══
+const GESTION = [
+  { id: 'solicitada', nombre: 'Solicitada', corto: 'Solicitadas', estados: ['idea', 'guion'], cls: 'e-idea' },
+  { id: 'porGrabar', nombre: 'Por grabar', corto: 'Por grabar', estados: ['grabacion'], cls: 'e-grabacion' },
+  { id: 'edicion', nombre: 'Grabada · en edición', corto: 'En edición', estados: ['edicion'], cls: 'e-edicion' },
+  { id: 'entregada', nombre: 'Entregada · en revisión', corto: 'Entregadas', estados: ['revision'], cls: 'e-revision' },
+  { id: 'lista', nombre: 'Aprobada', corto: 'Aprobadas', estados: ['aprobada', 'programada'], cls: 'e-aprobada' },
+  { id: 'publicada', nombre: 'Publicada', estados: ['publicada'], cls: 'e-publicada' }
+];
+function gestionDe(p) { return GESTION.find(g => g.estados.includes(p.estado)) || GESTION[0]; }
+function resumenGestion(m, compacto) {
+  const ps = db.piezas.filter(p => p.marca === m.id);
+  const cajas = GESTION.filter(g => g.id !== 'publicada').map(g => ({ g, n: ps.filter(p => g.estados.includes(p.estado)).length }));
+  return `<div style="display:grid;grid-template-columns:repeat(${cajas.length},1fr);gap:8px">${cajas.map(({ g, n }) => `<div style="text-align:center;border-radius:12px;padding:8px 4px;${compacto ? 'background:var(--bg)' : 'background:rgba(255,255,255,.08)'}">
+    <b style="display:block;font-family:'Bricolage Grotesque',sans-serif;font-size:${compacto ? '1.25rem' : '1.6rem'};font-weight:800;line-height:1.1;${compacto ? 'color:var(--azul)' : 'color:#fff'}">${n}</b>
+    <span style="font-size:${compacto ? '.62rem' : '.7rem'};font-weight:600;${compacto ? 'color:var(--muted)' : 'color:#C9CCF2'}">${compacto ? g.corto : g.nombre}</span></div>`).join('')}</div>`;
+}
+function renderSolicitudes(m) {
+  const ps = db.piezas.filter(p => p.marca === m.id);
+  const orden = (a, b) => GESTION.indexOf(gestionDe(a)) - GESTION.indexOf(gestionDe(b)) || (a.solicitada || a.grab || '9').localeCompare(b.solicitada || b.grab || '9');
+  const enGestion = ps.filter(p => !['aprobada', 'programada', 'publicada'].includes(p.estado)).sort(orden);
+  const listas = ps.filter(p => ['aprobada', 'programada', 'publicada'].includes(p.estado)).sort((a, b) => (b.pub || '').localeCompare(a.pub || ''));
+  const tabla = lista => `<table class="tabla"><thead><tr><th>Contenido</th><th class="col-opc">Solicitado</th><th class="col-opc">Grabación</th><th>Gestión</th><th class="col-opc">Sale</th>${m.sla ? '<th>Tiempos</th>' : ''}<th></th></tr></thead><tbody>
+    ${lista.map(p => { const f = FORMATOS[p.formato] || FORMATOS.reel, g = gestionDe(p); return `<tr class="${p.adicional ? 'es-adic' : ''}" onclick="verPieza('${p.id}')">
+      <td><div class="pieza-cel">${thumb(p)}<div><div class="tit">${esc(p.titulo)} ${p.adicional ? '<span class="adic">Adicional</span>' : ''}</div><div class="fecha">${f[0]} ${f[1]}${p.red ? ' · ' + esc(p.red) : ''}${!CLIENTE && p.notas ? ' · ' + esc(p.notas.slice(0, 50)) : ''}</div></div></div></td>
+      <td class="fecha col-opc">${p.solicitada ? fCorta(p.solicitada) : '—'}</td>
+      <td class="fecha col-opc">${p.grab ? fLarga(p.grab) : g.id === 'solicitada' || g.id === 'porGrabar' ? 'por grabar' : 'grabada'}</td>
+      <td><span class="estado ${g.cls}">${g.nombre}</span></td>
+      <td class="fecha col-opc">${p.pub ? fCorta(p.pub) + (p.hora ? ' · ' + hora12(p.hora) : '') : 'por definir'}</td>
+      ${m.sla ? `<td>${miniTiempos(p)}</td>` : ''}
+      <td style="text-align:right">${botonDrive(p)}</td></tr>`; }).join('')}</tbody></table>`;
+  $('contenido').innerHTML = `<section class="sec"><div class="wrap">
+    <div class="toolbar"><div class="sec-label" style="flex:1;margin:0">Contenidos solicitados · en gestión</div>
+      <button class="btn sm solo-equipo" onclick="abrirPieza(null,'${m.id}');$('pSol').value=hoyISO();$('mpTitulo').textContent='Nueva solicitud'">+ Solicitud</button></div>
+    ${enGestion.length ? tabla(enGestion) : '<div class="vacio">No hay contenidos en gestión.</div>'}
+    ${listas.length ? `<div class="sec-label" style="margin-top:30px">Aprobados y publicados</div>${tabla(listas)}` : ''}
+  </div></section>`;
+}
+
+// ═══ Ver pieza (equipo y cliente) ═══
+function verPieza(id) {
+  verId = id;
+  const p = db.piezas.find(x => x.id === id), m = marcaDe(p.marca), f = FORMATOS[p.formato] || FORMATOS.reel, pr = proyDe(p.proyecto);
+  const prev = drivePreview(p.final);
+  $('vMedia').innerHTML = prev ? `<iframe src="${prev}" allow="autoplay" allowfullscreen></iframe>` : `<div style="padding:20px"><div style="font-size:2.4rem">${f[0]}</div>${p.final ? 'Este enlace no se puede previsualizar.<br>Ábrelo en Drive.' : 'La pieza aún no está lista en Drive.'}</div>`;
+  $('vTop').innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px;color:var(--ink)">${logo(m)}${esc(m.nombre)}</span> · ${f[0]} ${f[1]}${pr ? ' · ' + esc(pr.nombre) : ''} ${chipEstado(p.estado)}`;
+  $('vTitulo').innerHTML = esc(p.titulo) + (p.adicional ? ' <span class="adic">Adicional · fuera del presupuesto</span>' : '') + (p.uso && p.uso !== 'Orgánico' ? ` <span class="uso">${esc(p.uso)}</span>` : '');
+  $('vCuando').textContent = p.pub ? `Sale el ${DIAS[fecha(p.pub).getDay()]} ${fCorta(p.pub)}${p.hora ? ' a las ' + hora12(p.hora) : ''} · ${p.red || ''}` : 'Fecha de publicación por definir';
+  $('vCopy').textContent = p.copy || 'Copy pendiente';
+  $('vCopy').classList.toggle('vacio-copy', !p.copy);
+  $('vDatos').innerHTML = CLIENTE ? '' : [
+    p.resp && `<div class="ver-dato"><b>Responsable</b>${esc(p.resp)}</div>`,
+    p.grab && `<div class="ver-dato"><b>Grabación</b>${fCorta(p.grab)}</div>`,
+    p.guion && `<div class="ver-dato"><b>Guion</b>${esc(p.guion)}</div>`,
+    p.notas && `<div class="ver-dato"><b>Ajustes</b>${esc(p.notas)}</div>`,
+    p.ref && `<div class="ver-dato"><b>Referencia</b><a href="${esc(p.ref)}" target="_blank" rel="noopener">abrir ↗</a></div>`
+  ].filter(Boolean).join('');
+  pintarTiempos(p);
+  pintarResultados(p);
+  $('vDrive').style.display = p.final ? '' : 'none';
+  $('vDrive').href = p.final || '#';
+  $('panelCampana').hidden = true;
+  $('mVer').classList.add('on');
+}
+function copiarCopy() { const p = db.piezas.find(x => x.id === verId); navigator.clipboard.writeText(p.copy || '').then(() => toast('Copy copiado')); }
+
+// ═══ Modal pieza ═══
+function opcionesMarca(el) { el.innerHTML = db.marcas.map(m => `<option value="${m.id}">${esc(m.nombre)}</option>`).join(''); }
+function responsables() { return [...new Set(db.piezas.map(x => x.resp).concat(db.tareas.map(x => x.resp)).filter(Boolean))]; }
+// Parrilla a la que pertenece la pieza; las marcas por solicitudes no la usan
+function llenarProyectos(marca, sel, nueva) {
+  const m = marcaDe(marca), proys = db.proyectos.filter(p => p.marca === marca).sort((a, b) => (a.estado === 'cerrado') - (b.estado === 'cerrado'));
+  $('pProyectoC').hidden = $('pAdicC').hidden = m.modo === 'solicitudes';
+  $('pProyecto').innerHTML = proys.map(p => `<option value="${p.id}">${esc(p.nombre)}${p.estado === 'cerrado' ? ' (cerrada)' : ''}</option>`).join('')
+    + `<option value="">${proys.length ? 'Ninguna · pieza suelta' : 'Esta marca aún no tiene parrilla creada'}</option>`;
+  // Pieza nueva: queda en la parrilla activa de la marca
+  $('pProyecto').value = sel || (nueva && proys[0] && proys[0].estado !== 'cerrado' ? proys[0].id : '');
+}
+$('pMarca').onchange = () => llenarProyectos($('pMarca').value, '', true);
+function abrirPieza(id, marca, proyecto) {
+  if (CLIENTE) return;
+  editPieza = id || null;
+  const def = marca || (ruta.vista === 'marca' ? ruta.marca : ($('pfMarca') && $('pfMarca').value)) || db.marcas[0]?.id;
+  const p = id ? db.piezas.find(x => x.id === id) : { marca: def, proyecto: proyecto || '', formato: 'reel', estado: 'idea', red: 'Instagram' };
+  opcionesMarca($('pMarca'));
+  $('pFormato').innerHTML = Object.entries(FORMATOS).map(([k, v]) => `<option value="${k}">${v[0]} ${v[1]}</option>`).join('');
+  $('pEstado').innerHTML = ESTADOS.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
+  $('responsables').innerHTML = responsables().map(r => `<option value="${esc(r)}">`).join('');
+  $('mpTitulo').textContent = id ? 'Editar pieza' : 'Nueva pieza';
+  $('pBorrar').style.display = id ? '' : 'none';
+  $('pAdic').checked = !!p.adicional; $('pUso').value = p.uso || 'Orgánico';
+  const campos = { pTitulo: 'titulo', pMarca: 'marca', pFormato: 'formato', pEstado: 'estado', pResp: 'resp', pGrab: 'grab', pSol: 'solicitada', pPub: 'pub', pHora: 'hora', pRed: 'red', pGuion: 'guion', pCopy: 'copy', pRef: 'ref', pFinal: 'final', pNotas: 'notas' };
+  Object.entries(campos).forEach(([el, k]) => $(el).value = p[k] || '');
+  llenarProyectos(p.marca, p.proyecto, !id);
+  $('mPieza').classList.add('on');
+  setTimeout(() => $('pTitulo').focus(), 50);
+}
+function guardarPieza() {
+  const titulo = $('pTitulo').value.trim();
+  if (!titulo) { $('pTitulo').focus(); toast('Ponle un título a la pieza'); return; }
+  const datos = { titulo, marca: $('pMarca').value, proyecto: $('pProyecto').value, formato: $('pFormato').value, estado: $('pEstado').value, resp: $('pResp').value.trim(), grab: $('pGrab').value, solicitada: $('pSol').value, pub: $('pPub').value, hora: $('pHora').value, red: $('pRed').value, guion: $('pGuion').value, copy: $('pCopy').value, ref: $('pRef').value.trim(), final: $('pFinal').value.trim(), notas: $('pNotas').value, uso: $('pUso').value, adicional: $('pAdic').checked };
+  if (editPieza) Object.assign(db.piezas.find(x => x.id === editPieza), datos);
+  else db.piezas.push({ id: uid(), ...datos });
+  if (datos.proyecto) abiertosProy.add(datos.proyecto);
+  cerrar('mPieza'); guardar(); toast('Pieza guardada');
+}
+function borrarPieza() {
+  if (!confirm('¿Eliminar esta pieza?')) return;
+  db.piezas = db.piezas.filter(x => x.id !== editPieza);
+  cerrar('mPieza'); guardar(); toast('Pieza eliminada');
+}
+
+// ═══ Modal tarea ═══
+function piezasDeMarca(marca, sel) {
+  $('tPieza').innerHTML = '<option value="">Ninguna</option>' + db.piezas.filter(p => p.marca === marca).map(p => `<option value="${p.id}">${esc(p.titulo)}</option>`).join('');
+  $('tPieza').value = sel || '';
+}
+$('tMarca').onchange = () => piezasDeMarca($('tMarca').value);
+function pintarSubs() {
+  $('tSubs').innerHTML = subsTmp.map((x, i) => `<div class="subt ${x.ok ? 'ok' : ''}">
+    <button type="button" class="check ${x.ok ? 'ok' : ''}" ${CLIENTE ? 'disabled' : `onclick="subsTmp[${i}].ok=!subsTmp[${i}].ok;pintarSubs()"`}>${x.ok ? '✓' : ''}</button>
+    <span>${esc(x.t)}</span>${CLIENTE ? '' : `<button type="button" class="x" title="Quitar" onclick="subsTmp.splice(${i},1);pintarSubs()">×</button>`}</div>`).join('') || (CLIENTE ? '<small style="color:var(--muted)">Sin checklist</small>' : '');
+}
+$('tSubNueva').onkeydown = e => {
+  if (e.key === 'Enter' && e.target.value.trim()) { e.preventDefault(); subsTmp.push({ t: e.target.value.trim(), ok: false }); e.target.value = ''; pintarSubs(); }
+};
+function abrirTarea(id, marca) {
+  editTarea = id || null;
+  const t = id ? db.tareas.find(x => x.id === id) : { marca: marca || (ruta.vista === 'marca' ? ruta.marca : db.marcas[0]?.id), estado: 'pendiente', prioridad: 'normal', sub: [] };
+  opcionesMarca($('tMarca'));
+  $('tEstado').innerHTML = T_ESTADOS.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
+  $('tPrio').innerHTML = Object.entries(PRIORIDADES).map(([k, v]) => `<option value="${k}">${v.replace('⚑ ', '')}</option>`).join('');
+  $('responsables').innerHTML = responsables().map(r => `<option value="${esc(r)}">`).join('');
+  $('mtTitulo').textContent = CLIENTE ? 'Tarea' : id ? 'Editar tarea' : 'Nueva tarea';
+  $('mtSub').textContent = CLIENTE ? marcaDe(t.marca).nombre : 'Las ve el equipo y el cliente de la marca, salvo las marcadas como “solo equipo”.';
+  $('tBorrar').style.display = id ? '' : 'none';
+  $('tTitulo').value = t.titulo || ''; $('tMarca').value = t.marca; $('tEstado').value = t.estado; $('tPrio').value = t.prioridad;
+  $('tResp').value = t.resp || ''; $('tVence').value = t.vence || ''; $('tNotas').value = t.notas || ''; $('tSubNueva').value = '';
+  $('tPrivada').checked = !!t.privada;
+  piezasDeMarca(t.marca, t.pieza);
+  // Cliente: solo lectura
+  ['tTitulo', 'tMarca', 'tEstado', 'tPrio', 'tResp', 'tVence', 'tPieza', 'tNotas'].forEach(k => $(k).disabled = !!CLIENTE);
+  subsTmp = JSON.parse(JSON.stringify(t.sub || [])); pintarSubs();
+  $('panelCampana').hidden = true;
+  $('mTarea').classList.add('on');
+  if (!CLIENTE) setTimeout(() => $('tTitulo').focus(), 50);
+}
+function guardarTarea() {
+  if (CLIENTE) return;
+  const titulo = $('tTitulo').value.trim();
+  if (!titulo) { $('tTitulo').focus(); toast('Escribe la tarea'); return; }
+  const pend = $('tSubNueva').value.trim(); if (pend) subsTmp.push({ t: pend, ok: false });
+  const datos = { titulo, marca: $('tMarca').value, estado: $('tEstado').value, prioridad: $('tPrio').value, resp: $('tResp').value.trim(), vence: $('tVence').value, pieza: $('tPieza').value, notas: $('tNotas').value, sub: subsTmp, privada: $('tPrivada').checked };
+  if (editTarea) Object.assign(db.tareas.find(x => x.id === editTarea), datos);
+  else db.tareas.push({ id: uid(), creada: hoyISO(), ...datos });
+  cerrar('mTarea'); guardar(); toast('Tarea guardada');
+}
+function borrarTarea() {
+  if (!confirm('¿Eliminar esta tarea?')) return;
+  db.tareas = db.tareas.filter(x => x.id !== editTarea);
+  cerrar('mTarea'); guardar(); toast('Tarea eliminada');
+}
+
+// ═══ Modal proyecto ═══
+function abrirProyecto(id, marca) {
+  editProyecto = id || null;
+  const pr = id ? proyDe(id) : { marca, tipo: 'Parrilla mensual', estado: 'activo' };
+  proyMarca = pr.marca;
+  $('mprTitulo').textContent = id ? 'Editar parrilla o proyecto' : 'Nueva parrilla o proyecto';
+  $('mprSub').textContent = marcaDe(pr.marca).nombre;
+  $('prBorrar').style.display = id ? '' : 'none';
+  $('prNombre').value = pr.nombre || ''; $('prTipo').value = pr.tipo; $('prEstado').value = pr.estado;
+  $('prCupo').value = pr.cupo || ''; $('prDrive').value = pr.drive || ''; $('prLink').value = pr.link || '';
+  $('mProyecto').classList.add('on');
+  setTimeout(() => $('prNombre').focus(), 50);
+}
+function guardarProyecto() {
+  const nombre = $('prNombre').value.trim();
+  if (!nombre) { $('prNombre').focus(); toast('Ponle nombre al proyecto'); return; }
+  const datos = { nombre, tipo: $('prTipo').value, estado: $('prEstado').value, cupo: +$('prCupo').value || 0, drive: $('prDrive').value.trim(), link: $('prLink').value.trim() };
+  if (editProyecto) Object.assign(proyDe(editProyecto), datos);
+  else { const id = uid(); db.proyectos.push({ id, marca: proyMarca, ...datos }); abiertosProy.add(id); }
+  cerrar('mProyecto'); guardar(); toast('Proyecto guardado');
+}
+function borrarProyecto() {
+  const n = db.piezas.filter(p => p.proyecto === editProyecto).length;
+  if (!confirm(n ? `El proyecto tiene ${n} pieza(s). Quedan como piezas sueltas. ¿Eliminar el proyecto?` : '¿Eliminar este proyecto?')) return;
+  db.piezas.forEach(p => { if (p.proyecto === editProyecto) p.proyecto = ''; });
+  db.proyectos = db.proyectos.filter(p => p.id !== editProyecto);
+  cerrar('mProyecto'); guardar(); toast('Proyecto eliminado');
+}
+
+// ═══ Modal marca ═══
+function abrirMarca(id) {
+  if (!esAdmin()) return;
+  editMarca = id || null;
+  const m = id ? marcaDe(id) : { color: COLORES[0], mes: hoyISO().slice(0, 7) };
+  $('mmTitulo').textContent = id ? 'Editar marca' : 'Nueva marca';
+  $('mBorrar').style.display = id ? '' : 'none';
+  $('mNombre').value = m.nombre || ''; $('mSector').value = m.sector || ''; $('mLogo').value = m.logo || '';
+  $('mMes').value = m.mes || ''; $('mCupo').value = m.cupo || ''; $('mModo').value = m.modo || 'parrilla'; $('mDrive').value = m.drive || '';
+  const sla = m.sla || { entrega: 5, comentarios: 2, cambios: 3, rondas: 1 };
+  $('mSla').checked = !!m.sla; $('mSlaC').hidden = !m.sla;
+  $('mSlaE').value = sla.entrega; $('mSlaEA').value = sla.entregaAdic || ''; $('mSlaCo').value = sla.comentarios; $('mSlaR').value = sla.cambios; $('mSlaN').value = sla.rondas;
+  mColor = m.color; pintarColores();
+  $('mMarca').classList.add('on');
+}
+function pintarColores() {
+  $('mColores').innerHTML = COLORES.map(c => `<button type="button" class="${c === mColor ? 'on' : ''}" style="background:${c}" onclick="mColor='${c}';pintarColores()"></button>`).join('');
+}
+function guardarMarca() {
+  const nombre = $('mNombre').value.trim();
+  if (!nombre) { $('mNombre').focus(); toast('Ponle nombre a la marca'); return; }
+  const datos = { nombre, sector: $('mSector').value.trim(), logo: $('mLogo').value.trim(), modo: $('mModo').value, mes: $('mMes').value, cupo: +$('mCupo').value || 0, drive: $('mDrive').value.trim(), color: mColor,
+    sla: $('mSla').checked ? { entrega: +$('mSlaE').value || 5, entregaAdic: +$('mSlaEA').value || 0, comentarios: +$('mSlaCo').value || 2, cambios: +$('mSlaR').value || 3, rondas: +$('mSlaN').value || 0 } : null };
+  if (editMarca) Object.assign(db.marcas.find(m => m.id === editMarca), datos);
+  else db.marcas.push({ id: uid(), etapa: 'parrilla', ...datos });
+  cerrar('mMarca'); guardar(); toast('Marca guardada');
+}
+function borrarMarca() {
+  const n = db.piezas.filter(p => p.marca === editMarca).length;
+  if (!confirm(n ? `Esta marca tiene ${n} pieza(s), sus proyectos y tareas. Se eliminan también. ¿Continuar?` : '¿Eliminar esta marca?')) return;
+  db.marcas = db.marcas.filter(m => m.id !== editMarca);
+  ['proyectos', 'piezas', 'tareas'].forEach(k => db[k] = db[k].filter(x => x.marca !== editMarca));
+  db.usuarios.filter(u => u.marca === editMarca).forEach(u => FB.borrar('usuarios', u.id));
+  cerrar('mMarca'); guardar(); toast('Marca eliminada');
+}
+
+// ═══ Usuarios y accesos (solo administradoras) ═══
+function abrirUsuarios() {
+  if (!esAdmin()) return;
+  $('uMarca').innerHTML = db.marcas.map(m => `<option value="${m.id}">${esc(m.nombre)}</option>`).join('');
+  limpiarUsuario(); pintarUsuarios();
+  $('mUsuarios').classList.add('on');
+}
+function pintarUsuarios() {
+  $('listaUsuarios').innerHTML = db.usuarios.map(u => `<div class="usr">
+    ${u.rol === 'cliente' ? logo(marcaDe(u.marca)) : '<span class="avatar">' + esc(iniciales(u.nombre)) + '</span>'}
+    <div class="sp"><b>${esc(u.nombre)}</b><small>${esc(u.correo)}${u.rol === 'cliente' ? ' · ' + esc(marcaDe(u.marca).nombre) : ''}</small></div>
+    <span class="rol ${u.rol === 'cliente' ? 'cli' : ''}">${u.rol === 'cliente' ? 'Cliente' : 'Admin'}</span>
+    <button class="btn sm ghost" onclick="editarUsuario('${u.id}')">✎</button>
+    ${u.id !== sesion.id ? `<button class="btn sm danger" onclick="borrarUsuario('${u.id}')">×</button>` : ''}
+  </div>`).join('');
+}
+function limpiarUsuario() {
+  editUsuario = null;
+  ['uNom', 'uUsr', 'uClave'].forEach(k => $(k).value = '');
+  $('uRol').value = 'cliente'; $('uMarcaC').hidden = false;
+  $('uFormT').textContent = 'Nuevo usuario'; $('uCancelar').hidden = true; $('uClaveAyuda').textContent = '';
+  $('uUsr').disabled = false; $('uClaveC').hidden = false; $('uClaveMail').hidden = true;
+}
+function editarUsuario(id) {
+  const u = db.usuarios.find(x => x.id === id); editUsuario = id;
+  $('uNom').value = u.nombre; $('uUsr').value = u.correo; $('uClave').value = '';
+  $('uRol').value = u.rol; $('uMarcaC').hidden = u.rol !== 'cliente'; if (u.marca) $('uMarca').value = u.marca;
+  $('uFormT').textContent = 'Editar: ' + u.nombre; $('uCancelar').hidden = false;
+  // El correo y la contraseña no se cambian aquí: la persona recibe un correo para crear su contraseña
+  $('uUsr').disabled = true; $('uClaveC').hidden = true; $('uClaveMail').hidden = false;
+}
+function enviarCambioClave() {
+  const u = db.usuarios.find(x => x.id === editUsuario);
+  FB.recuperar(u.correo).then(() => toast('Correo enviado a ' + u.correo)).catch(e => toast(msjError(e)));
+}
+async function guardarUsuario() {
+  const nombre = $('uNom').value.trim(), correo = $('uUsr').value.trim().toLowerCase(), clave = $('uClave').value;
+  if (!nombre || !correo) { toast('Escribe nombre y correo'); return; }
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(correo)) { toast('Escribe un correo válido'); return; }
+  if (db.usuarios.some(u => u.correo === correo && u.id !== editUsuario)) { toast('Ese correo ya tiene acceso'); return; }
+  if (!editUsuario && clave && clave.length < 6) { toast('La contraseña debe tener mínimo 6 caracteres'); return; }
+  const datos = { nombre, correo, rol: $('uRol').value, marca: $('uRol').value === 'cliente' ? $('uMarca').value : '' };
+  try {
+    // Se crea también la cuenta con contraseña para reservar el correo; si ya existe (por ejemplo, entra con Google), se sigue
+    if (!editUsuario) await FB.crearCuenta(correo, clave).catch(e => { if (e.code !== 'auth/email-already-in-use') throw e; });
+    const id = editUsuario || correo;
+    await FB.poner('usuarios', id, datos);
+    if (id === sesion.id) { Object.assign(sesion, datos); $('uNombre').textContent = sesion.nombre; }
+    limpiarUsuario(); toast(editUsuario ? 'Usuario guardado' : 'Acceso creado. Comparte el correo y la contraseña con la persona.');
+  } catch (e) { console.error(e); toast(msjError(e)); }
+}
+function borrarUsuario(id) {
+  if (!confirm('¿Quitar el acceso a este usuario?')) return;
+  FB.borrar('usuarios', id).then(() => toast('Acceso eliminado')).catch(e => toast(msjError(e)));
+}
+
+// ═══ Copia de seguridad (archivo .json con todas las marcas) ═══
+function descargarRespaldo() {
+  const datos = {}; COLS.forEach(c => datos[c] = db[c]);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(datos, null, 1)], { type: 'application/json' }));
+  a.download = 'hounter-contenidos-' + hoyISO() + '.json'; a.click();
+}
+function restaurarRespaldo(ev) {
+  const f = ev.target.files[0]; ev.target.value = '';
+  if (!f) return;
+  f.text().then(t => {
+    const d = JSON.parse(t);
+    if (!d || !Array.isArray(d.marcas)) throw new Error('formato');
+    if (!confirm('Esto reemplaza todas las marcas, piezas, proyectos y tareas por las de la copia. ¿Continuar?')) return;
+    COLS.forEach(c => db[c] = (d[c] || []).filter(x => x && x.id));
+    guardar(); toast('Copia restaurada');
+  }).catch(() => toast('Ese archivo no es una copia de seguridad válida'));
+}
+
+function cerrar(id) { $(id).classList.remove('on'); if (id === 'mVer') $('vMedia').innerHTML = ''; }
+document.querySelectorAll('.modal-bg').forEach(bg => bg.addEventListener('mousedown', e => { if (e.target === bg) cerrar(bg.id); }));
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.modal-bg.on').forEach(m => cerrar(m.id)); });
+
+// ═══ Arranque ═══
+$('anio').textContent = new Date().getFullYear();
+// Firebase arranca en el módulo de abajo y llama a alCambiarSesion
+</script>
+<script type="module">
+// ═══ Conexión con Firebase (proyecto hounter-contenidos) ═══
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, createUserWithEmailAndPassword, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { getFirestore, collection, doc, getDoc, setDoc, deleteDoc, onSnapshot, query, where, writeBatch } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+const config = {
+  apiKey: 'AIzaSyAzGgC3DP7VfT2ZDsMnQRCi5AKqMkVnk_s',
+  authDomain: 'hounter-contenidos.firebaseapp.com',
+  projectId: 'hounter-contenidos',
+  storageBucket: 'hounter-contenidos.firebasestorage.app',
+  messagingSenderId: '132394989296',
+  appId: '1:132394989296:web:ac8818427d417dd158b435'
+};
+const app = initializeApp(config);
+const auth = getAuth(app), fs = getFirestore(app);
+auth.languageCode = 'es';
+setPersistence(auth, browserLocalPersistence);
+
+const lista = snap => snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+window.FB = {
+  entrar: (correo, clave) => signInWithEmailAndPassword(auth, correo, clave),
+  google: () => signInWithPopup(auth, new GoogleAuthProvider().setCustomParameters({ prompt: 'select_account' })),
+  salir: () => signOut(auth),
+  recuperar: correo => sendPasswordResetEmail(auth, correo),
+  perfil: async uid => { const d = await getDoc(doc(fs, 'usuarios', uid)); return d.exists() ? d.data() : null; },
+  poner: (col, id, datos) => setDoc(doc(fs, col, id), datos),
+  borrar: (col, id) => deleteDoc(doc(fs, col, id)),
+  // Sube los cambios en grupos (Firestore acepta hasta 500 por grupo)
+  lote: async ops => {
+    for (let i = 0; i < ops.length; i += 400) {
+      const b = writeBatch(fs);
+      ops.slice(i, i + 400).forEach(o => o.borrar ? b.delete(doc(fs, o.col, o.id)) : b.set(doc(fs, o.col, o.id), o.datos));
+      await b.commit();
+    }
+  },
+  // Crea la cuenta de otra persona sin cerrar la sesión de quien la crea
+  crearCuenta: async (correo, clave) => {
+    const app2 = initializeApp(config, 'alta-' + Date.now()), auth2 = getAuth(app2);
+    // Sin contraseña inicial: se crea una al azar y la persona entra con Google o pide una nueva
+    const r = await createUserWithEmailAndPassword(auth2, correo, clave || crypto.randomUUID() + 'Aa1!');
+    await signOut(auth2);
+    return r.user.uid;
+  },
+  // Admin escucha todo; un cliente solo su marca (y las tareas que no son "solo equipo")
+  escuchar: (usr, recibir, listo, error) => {
+    const fuentes = usr.rol === 'admin'
+      ? ['marcas', 'proyectos', 'piezas', 'tareas', 'usuarios'].map(c => [c, collection(fs, c)])
+      : [['marcas', doc(fs, 'marcas', usr.marca)],
+         ['proyectos', query(collection(fs, 'proyectos'), where('marca', '==', usr.marca))],
+         ['piezas', query(collection(fs, 'piezas'), where('marca', '==', usr.marca))],
+         ['tareas', query(collection(fs, 'tareas'), where('marca', '==', usr.marca), where('privada', '==', false))],
+         ['usuarios', doc(fs, 'usuarios', usr.id)]];
+    let faltan = fuentes.length;
+    return fuentes.map(([col, ref]) => {
+      let primera = true;
+      return onSnapshot(ref, snap => {
+        recibir(col, snap.docs ? lista(snap) : snap.exists() ? [{ id: snap.id, ...snap.data() }] : []);
+        if (primera) { primera = false; if (--faltan === 0) listo(); }
+      }, error);
+    });
+  }
+};
+onAuthStateChanged(auth, user => window.alCambiarSesion(user));
+</script>
+
+</body>
+</html>

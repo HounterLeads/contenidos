@@ -2040,6 +2040,12 @@ function restaurarRespaldo(ev) {
   f.text().then(t => {
     const d = JSON.parse(t);
     if (!d || !Array.isArray(d.marcas)) throw new Error('formato');
+    // Archivo para agregar: suma o actualiza lo que trae, sin borrar lo demás
+    if (d.agregar) {
+      if (!confirm('Se agregan: ' + d.marcas.map(m => m.nombre).join(', ') + '. Lo demás queda igual. ¿Continuar?')) return;
+      COLS.forEach(c => (d[c] || []).filter(x => x && x.id).forEach(x => { const i = db[c].findIndex(y => y.id === x.id); if (i >= 0) db[c][i] = x; else db[c].push(x); }));
+      guardar(); toast('Agregado'); return;
+    }
     if (!confirm('Esto reemplaza todas las marcas, piezas, proyectos y tareas por las de la copia. ¿Continuar?')) return;
     COLS.forEach(c => db[c] = (d[c] || []).filter(x => x && x.id));
     guardar(); toast('Copia restaurada');

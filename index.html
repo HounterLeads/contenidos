@@ -1372,7 +1372,7 @@ function calcTiempos(p) {
   const sla = marcaDe(p.marca).sla; if (!sla) return null;
   const h = historial(p), hoy = hoyISO(), filas = [];
   const grab = h.filter(e => e.tipo === 'grabacion').pop();
-  if (!grab) return { h, filas, estado: ['publicada', 'programada', 'aprobada'].includes(p.estado) ? { txt: 'Sin historial de tiempos registrado', nivel: 'gris', corto: 'Sin historial' } : { txt: 'Sin grabación registrada: el plazo aún no empieza', nivel: 'gris', corto: 'Sin grabar' } };
+  if (!grab) return { h, filas, nota: {}, aTiempo: { entrega: null, rondas: [] }, estado: ['publicada', 'programada', 'aprobada'].includes(p.estado) ? { txt: 'Sin historial de tiempos registrado', nivel: 'gris', corto: 'Sin historial' } : { txt: 'Sin grabación registrada: el plazo aún no empieza', nivel: 'gris', corto: 'Sin grabar' } };
   let base = grab.fecha;
   h.filter(e => e.tipo === 'reinicio' && e.fecha > base).forEach(e => base = e.fecha);
   const dias = diasEntrega(p, sla), lim1 = sumarHabiles(base, dias);

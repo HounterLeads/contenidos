@@ -184,6 +184,9 @@
   .e-aprobada{background:#E0F5E9;color:#1C7A47}
   .e-programada{background:#DDF3F7;color:#0E7490}
   .e-publicada{background:#0B0A2E;color:#fff}
+  .e-suspendida{background:#FFE9D6;color:#B54708}
+  .e-cancelada{background:#EFEFF2;color:#8A8CA0;text-decoration:line-through}
+  .inactiva{opacity:.5}
   .tarde{font-size:.68rem;color:#B42318;font-weight:700}
   .drive{display:inline-flex;align-items:center;gap:5px;font-size:.74rem;font-weight:700;color:#1C7A47;background:#E0F5E9;padding:5px 11px;border-radius:50px;text-decoration:none;white-space:nowrap}
   .drive:hover{background:#C9EDD8}
@@ -763,10 +766,15 @@ const ESTADOS = [
   { id: 'revision', nombre: 'Revisión cliente' },
   { id: 'aprobada', nombre: 'Aprobada' },
   { id: 'programada', nombre: 'Programada' },
-  { id: 'publicada', nombre: 'Publicada' }
+  { id: 'publicada', nombre: 'Publicada' },
+  { id: 'suspendida', nombre: 'Suspendida' },
+  { id: 'cancelada', nombre: 'Cancelada' }
 ];
 // El cliente ve los estados internos agrupados
-const ESTADO_CLIENTE = { idea: 'En producción', guion: 'En producción', grabacion: 'En producción', edicion: 'En producción', revision: 'Lista para revisar', aprobada: 'Aprobada', programada: 'Programada', publicada: 'Publicada' };
+const ESTADO_CLIENTE = { idea: 'En producción', guion: 'En producción', grabacion: 'En producción', edicion: 'En producción', revision: 'Lista para revisar', aprobada: 'Aprobada', programada: 'Programada', publicada: 'Publicada', suspendida: 'Suspendida', cancelada: 'Cancelada' };
+// Suspendidas y canceladas: no cuentan en el cupo ni generan alertas
+const INACTIVAS = ['suspendida', 'cancelada'];
+function activa(p) { return !INACTIVAS.includes(p.estado); }
 const LISTAS = ['aprobada', 'programada', 'publicada'];
 const PROGRAMADAS = ['programada', 'publicada'];
 // Etapas del ciclo mensual de cada marca
@@ -874,7 +882,7 @@ function esc(s) { return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;
 function logo(m) { return m.logo ? `<img class="mini-logo" src="${esc(m.logo)}" alt="">` : `<span class="mini-logo sin">${m.emoji || esc((m.nombre || '?')[0])}</span>`; }
 function logoGrande(m) { return `<div class="logo-ic">${m.logo ? `<img src="${esc(m.logo)}" alt="${esc(m.nombre)}">` : m.emoji || esc(m.nombre[0])}</div>`; }
 function chipEstado(e) { const x = ESTADOS.find(s => s.id === e) || ESTADOS[0]; return `<span class="estado e-${x.id}">${CLIENTE ? ESTADO_CLIENTE[x.id] : x.nombre}</span>`; }
-function atrasada(p) { return p.pub && p.pub < hoyISO() && p.estado !== 'publicada'; }
+function atrasada(p) { return p.pub && p.pub < hoyISO() && p.estado !== 'publicada' && activa(p); }
 function mesRef() { return iso(planMes).slice(0, 7); }
 function toast(t) { const el = $('toast'); el.textContent = t; el.classList.add('on'); setTimeout(() => el.classList.remove('on'), 1900); }
 function esAdmin() { return sesion && sesion.rol === 'admin'; }
@@ -1005,7 +1013,7 @@ function mesCiclo(m) { return m.mes ? nombreMes(fecha(m.mes + '-01')) : ''; }
 
 // ═══ INICIO: centro de administración ═══
 function resumenMarca(m, mes) {
-  const ps = db.piezas.filter(p => p.marca === m.id && p.pub && p.pub.startsWith(mes));
+  const ps = db.piezas.filter(p => p.marca === m.id && p.pub && p.pub.startsWith(mes) && activa(p));
   const prog = ps.filter(p => PROGRAMADAS.includes(p.estado)).length;
   const plan = ps.filter(p => !p.adicional), adic = ps.length - plan.length;
   const meta = Math.max(plan.length, +m.cupo || 0);
@@ -1017,9 +1025,9 @@ function renderInicio() {
     <h1>Centro de administración<br>de <em>contenidos</em>.</h1>
     <p class="lead">Lo que debe quedar programado este mes, en qué etapa va cada marca y lo que necesita atención.</p>`;
   const mes = mesRef();
-  const ps = db.piezas.filter(p => p.pub && p.pub.startsWith(mes));
+  const ps = db.piezas.filter(p => p.pub && p.pub.startsWith(mes) && activa(p));
   const prog = ps.filter(p => PROGRAMADAS.includes(p.estado)).length;
-  const meta = db.marcas.reduce((s, m) => s + Math.max(+m.cupo || 0, db.piezas.filter(p => p.marca === m.id && p.pub && p.pub.startsWith(mes)).length), 0);
+  const meta = db.marcas.reduce((s, m) => s + Math.max(+m.cupo || 0, ps.filter(p => p.marca === m.id).length), 0);
   const revision = db.piezas.filter(p => p.estado === 'revision').length;
   const vencidas = db.tareas.filter(t => t.estado !== 'hecha' && t.vence && t.vence < hoyISO()).length;
   $('stats').innerHTML = `
@@ -1060,7 +1068,7 @@ function renderInicio() {
   renderPlaneadorInicio();
 }
 function faltantes(p) {
-  if (PROGRAMADAS.includes(p.estado)) return [];
+  if (PROGRAMADAS.includes(p.estado) || !activa(p)) return [];
   return [!p.hora && 'hora', !p.copy && 'copy', !p.final && 'archivo', p.estado === 'revision' && 'aprobación'].filter(Boolean);
 }
 function renderPlaneadorInicio() {
@@ -1098,12 +1106,12 @@ function renderMarca() {
       <a class="navbtn ${t === 'plan' ? 'on' : ''}" href="#/marca/${m.id}/plan">📄 Plan y términos</a>
     </div>`;
   const ps = db.piezas.filter(p => p.marca === m.id);
-  const delMes = ps.filter(p => p.pub && p.pub.startsWith(mesRef()));
+  const delMes = ps.filter(p => p.pub && p.pub.startsWith(mesRef()) && activa(p));
   const delPlan = delMes.filter(p => !p.adicional), nAdic = delMes.length - delPlan.length;
   const prog = delPlan.filter(p => PROGRAMADAS.includes(p.estado)).length;
   const tAb = tareasVisibles(m.id).filter(x => x.estado !== 'hecha').length;
   $('stats').innerHTML = `
-    ${m.modo === 'solicitudes' ? `<div class="stat"><b>${ps.filter(p => !['aprobada', 'programada', 'publicada'].includes(p.estado)).length}</b><span>contenidos en gestión</span></div>` : `<div class="stat"><b>${prog}<small> / ${Math.max(delPlan.length, +m.cupo || 0)}</small></b><span>del plan programadas en ${nombreMes(planMes).toLowerCase()}${nAdic ? ` · <span class="adic">+${nAdic} adicional${nAdic === 1 ? '' : 'es'}</span>` : ''}</span></div>`}
+    ${m.modo === 'solicitudes' ? `<div class="stat"><b>${ps.filter(p => activa(p) && !['aprobada', 'programada', 'publicada'].includes(p.estado)).length}</b><span>contenidos en gestión</span></div>` : `<div class="stat"><b>${prog}<small> / ${Math.max(delPlan.length, +m.cupo || 0)}</small></b><span>del plan programadas en ${nombreMes(planMes).toLowerCase()}${nAdic ? ` · <span class="adic">+${nAdic} adicional${nAdic === 1 ? '' : 'es'}</span>` : ''}</span></div>`}
     <div class="stat"><b>${ps.filter(p => ['idea', 'guion', 'grabacion', 'edicion'].includes(p.estado)).length}</b><span>en producción</span></div>
     <div class="stat"><b>${ps.filter(p => p.estado === 'revision').length}</b><span>${CLIENTE ? 'listas para que revises' : 'esperando al cliente'}</span></div>
     <div class="stat"><b>${tAb}</b><span>tareas abiertas</span></div>`;
@@ -1147,7 +1155,7 @@ function agenda(piezas) {
     if (sem !== semAnt) { html += `<div class="semana-t">${sem}</div>`; semAnt = sem; }
     const m = marcaDe(p.marca), f = FORMATOS[p.formato] || FORMATOS.reel, prev = drivePreview(p.final), pr = proyDe(p.proyecto);
     const largo = p.copy && (p.copy.length > 260 || p.copy.split('\n').length > 4);
-    html += `<div class="post">
+    html += `<div class="post ${activa(p) ? '' : 'inactiva'}">
       <div class="post-fecha" style="background:${colorPieza(p)}${franjaPauta(p)}"><div class="dsem">${DIAS[d.getDay()].slice(0, 3)}</div><div class="dnum">${d.getDate()}</div><div class="hora">${p.hora ? hora12(p.hora) : 'hora ?'}</div></div>
       <div class="post-cuerpo">
         <div class="post-top">${f[0]} ${f[1]} · ${esc(p.red || '')}${pr ? ' · ' + esc(pr.nombre) : ''} ${chipEstado(p.estado)}${!CLIENTE && atrasada(p) ? ' <span class="tarde">⚠ atrasada</span>' : ''}</div>
@@ -1173,7 +1181,7 @@ function calendario(ps) {
     const d = new Date(ini); d.setDate(ini.getDate() + i);
     const s = iso(d);
     const chips = ps.filter(p => p.pub === s).sort((a, b) => (a.hora || '99').localeCompare(b.hora || '99'))
-      .map(p => `<span class="chip ${p.adicional ? 'es-adic' : ''}" style="background:${colorPieza(p)}${franjaPauta(p)}" title="${esc(p.titulo)}${p.adicional ? ' · ADICIONAL' : ''}${p.uso && p.uso !== 'Orgánico' ? ' · ' + esc(p.uso).toUpperCase() : ''}" onclick="verPieza('${p.id}')">${miniUrl(p) ? `<img class="chip-img" src="${miniUrl(p)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<b>${p.hora ? hora12(p.hora).replace(' ', '').replace('. m.', '') : ''}</b>${esc(p.titulo)}</span>`)
+      .map(p => `<span class="chip ${p.adicional ? 'es-adic' : ''} ${activa(p) ? '' : 'inactiva'}" style="background:${colorPieza(p)}${franjaPauta(p)}" title="${esc(p.titulo)}${p.adicional ? ' · ADICIONAL' : ''}${p.uso && p.uso !== 'Orgánico' ? ' · ' + esc(p.uso).toUpperCase() : ''}" onclick="verPieza('${p.id}')">${miniUrl(p) ? `<img class="chip-img" src="${miniUrl(p)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<b>${p.hora ? hora12(p.hora).replace(' ', '').replace('. m.', '') : ''}</b>${esc(p.titulo)}</span>`)
       .concat(CLIENTE ? [] : ps.filter(p => p.grab === s).map(p => `<span class="chip grab" style="border-color:${marcaDe(p.marca).color}" title="Grabación · ${esc(p.titulo)}" onclick="verPieza('${p.id}')">🎥 ${esc(p.titulo)}</span>`));
     html += `<div class="dia ${d.getMonth() !== planMes.getMonth() ? 'fuera' : ''} ${s === hoy ? 'hoy' : ''}"><div class="n">${d.getDate()}</div>${chips.join('')}</div>`;
   }
@@ -1195,7 +1203,7 @@ function tablaParrilla(piezas) {
   </tbody></table>`;
 }
 function bloqueProyecto(pr, piezas) {
-  const delPlan = piezas.filter(p => !p.adicional), nAdic = piezas.length - delPlan.length;
+  const delPlan = piezas.filter(p => !p.adicional && activa(p)), nAdic = piezas.filter(p => p.adicional && activa(p)).length;
   const listas = delPlan.filter(p => LISTAS.includes(p.estado)).length;
   const total = Math.max(delPlan.length, +pr.cupo || 0);
   const pct = total ? Math.round(listas / total * 100) : 0;
@@ -1303,7 +1311,7 @@ function marcarTarea(id) {
 // Alertas calculadas a partir de piezas y tareas
 function alertas(marca) {
   const hoy = hoyISO(), en3 = sumarDias(3), out = [];
-  const ps = db.piezas.filter(p => !marca || p.marca === marca);
+  const ps = db.piezas.filter(p => (!marca || p.marca === marca) && activa(p));
   ps.forEach(p => {
     const m = marcaDe(p.marca), cuando = p.pub ? fCorta(p.pub) + (p.hora ? ' · ' + hora12(p.hora) : '') : '';
     if (CLIENTE) {
@@ -1374,6 +1382,7 @@ function diasEntrega(p, sla) {
 }
 function calcTiempos(p) {
   const sla = marcaDe(p.marca).sla; if (!sla) return null;
+  if (!activa(p)) { const n = ESTADOS.find(e => e.id === p.estado).nombre; return { h: historial(p), filas: [], nota: {}, aTiempo: { entrega: null, rondas: [] }, estado: { txt: `${n}: los plazos no corren`, nivel: 'gris', corto: n } }; }
   const h = historial(p), hoy = hoyISO(), filas = [];
   const grab = h.filter(e => e.tipo === 'grabacion').pop();
   if (!grab) {
@@ -1762,12 +1771,13 @@ const GESTION = [
   { id: 'edicion', nombre: 'Grabada · en edición', corto: 'En edición', estados: ['edicion'], cls: 'e-edicion' },
   { id: 'entregada', nombre: 'Entregada · en revisión', corto: 'Entregadas', estados: ['revision'], cls: 'e-revision' },
   { id: 'lista', nombre: 'Aprobada', corto: 'Aprobadas', estados: ['aprobada', 'programada'], cls: 'e-aprobada' },
-  { id: 'publicada', nombre: 'Publicada', estados: ['publicada'], cls: 'e-publicada' }
+  { id: 'publicada', nombre: 'Publicada', estados: ['publicada'], cls: 'e-publicada' },
+  { id: 'inactiva', nombre: 'Suspendida o cancelada', estados: INACTIVAS, cls: 'e-suspendida' }
 ];
 function gestionDe(p) { return GESTION.find(g => g.estados.includes(p.estado)) || GESTION[0]; }
 function resumenGestion(m, compacto) {
   const ps = db.piezas.filter(p => p.marca === m.id);
-  const cajas = GESTION.filter(g => g.id !== 'publicada').map(g => ({ g, n: ps.filter(p => g.estados.includes(p.estado)).length }));
+  const cajas = GESTION.filter(g => g.id !== 'publicada' && g.id !== 'inactiva').map(g => ({ g, n: ps.filter(p => g.estados.includes(p.estado)).length }));
   return `<div class="gestion-grid" style="display:grid;grid-template-columns:repeat(${cajas.length},1fr);gap:8px">${cajas.map(({ g, n }) => `<div style="text-align:center;border-radius:12px;padding:8px 4px;${compacto ? 'background:var(--bg)' : 'background:rgba(255,255,255,.08)'}">
     <b style="display:block;font-family:'Bricolage Grotesque',sans-serif;font-size:${compacto ? '1.25rem' : '1.6rem'};font-weight:800;line-height:1.1;${compacto ? 'color:var(--azul)' : 'color:#fff'}">${n}</b>
     <span style="font-size:${compacto ? '.62rem' : '.7rem'};font-weight:600;${compacto ? 'color:var(--muted)' : 'color:#C9CCF2'}">${compacto ? g.corto : g.nombre}</span></div>`).join('')}</div>`;
@@ -1775,14 +1785,14 @@ function resumenGestion(m, compacto) {
 function renderSolicitudes(m) {
   const ps = db.piezas.filter(p => p.marca === m.id);
   const orden = (a, b) => GESTION.indexOf(gestionDe(a)) - GESTION.indexOf(gestionDe(b)) || (a.solicitada || a.grab || '9').localeCompare(b.solicitada || b.grab || '9');
-  const enGestion = ps.filter(p => !['aprobada', 'programada', 'publicada'].includes(p.estado)).sort(orden);
+  const enGestion = ps.filter(p => activa(p) && !['aprobada', 'programada', 'publicada'].includes(p.estado)).sort(orden), inactivas = ps.filter(p => !activa(p));
   const listas = ps.filter(p => ['aprobada', 'programada', 'publicada'].includes(p.estado)).sort((a, b) => (b.pub || '').localeCompare(a.pub || ''));
   const tabla = lista => `<table class="tabla"><thead><tr><th>Contenido</th><th class="col-opc">Solicitado</th><th class="col-opc">Grabación</th><th>Gestión</th><th class="col-opc">Sale</th>${m.sla ? '<th>Tiempos</th>' : ''}<th></th></tr></thead><tbody>
     ${lista.map(p => { const f = FORMATOS[p.formato] || FORMATOS.reel, g = gestionDe(p); return `<tr class="${p.adicional ? 'es-adic' : ''}" onclick="verPieza('${p.id}')">
       <td><div class="pieza-cel">${thumb(p)}<div><div class="tit">${esc(p.titulo)} ${p.adicional ? '<span class="adic">Adicional</span>' : ''}</div><div class="fecha">${f[0]} ${f[1]}${p.red ? ' · ' + esc(p.red) : ''}${!CLIENTE && p.notas ? ' · ' + esc(p.notas.slice(0, 50)) : ''}</div></div></div></td>
       <td class="fecha col-opc">${p.solicitada ? fCorta(p.solicitada) : '—'}</td>
       <td class="fecha col-opc">${p.grab ? fLarga(p.grab) : g.id === 'solicitada' || g.id === 'porGrabar' ? 'por grabar' : 'grabada'}</td>
-      <td><span class="estado ${g.cls}">${g.nombre}</span></td>
+      <td>${g.id === 'inactiva' ? chipEstado(p.estado) : `<span class="estado ${g.cls}">${g.nombre}</span>`}</td>
       <td class="fecha col-opc">${p.pub ? fCorta(p.pub) + (p.hora ? ' · ' + hora12(p.hora) : '') : 'por definir'}</td>
       ${m.sla ? `<td>${miniTiempos(p)}</td>` : ''}
       <td style="text-align:right">${botonDrive(p)}</td></tr>`; }).join('')}</tbody></table>`;
@@ -1791,6 +1801,7 @@ function renderSolicitudes(m) {
       <button class="btn sm solo-equipo" onclick="abrirPieza(null,'${m.id}');$('pSol').value=hoyISO();$('mpTitulo').textContent='Nueva solicitud'">+ Solicitud</button></div>
     ${enGestion.length ? tabla(enGestion) : '<div class="vacio">No hay contenidos en gestión.</div>'}
     ${listas.length ? `<div class="sec-label" style="margin-top:30px">Aprobados y publicados</div>${tabla(listas)}` : ''}
+    ${inactivas.length ? `<div class="sec-label" style="margin-top:30px">Suspendidos y cancelados</div>${tabla(inactivas)}` : ''}
   </div></section>`;
 }
 

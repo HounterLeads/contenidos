@@ -1441,12 +1441,12 @@ function miniTiempos(p) {
   return `<span class="sla-mini ${r.estado.nivel}">${esc(r.estado.corto)}</span>${ent === true ? ' <span class="sla-mini verde" title="Primera entrega a tiempo">✓</span>' : ent === false ? ' <span class="sla-mini rojo" title="Primera entrega tarde">tarde</span>' : ''}`;
 }
 function pintarTiempos(p) {
-  const m = marcaDe(p.marca), r = calcTiempos(p);
-  if (!r) { $('vTiempos').innerHTML = ''; return; }
+  // Sin acuerdo de tiempos el historial se registra igual, sin calcular plazos
+  const m = marcaDe(p.marca), r = calcTiempos(p) || { h: historial(p), filas: [], nota: {}, estado: null };
   const items = r.h.map(e => ({ e, f: e.fecha })).concat(r.filas.map(x => ({ x, f: x.fecha })))
     .sort((a, b) => a.f.localeCompare(b.f) || (a.x ? 1 : 0) - (b.x ? 1 : 0));
-  $('vTiempos').innerHTML = `<div class="campo" style="margin-top:6px"><label>Historial y tiempos · acuerdo ${esc(m.nombre)}</label></div>
-    <div class="sla-est ${r.estado.nivel}">⏱️ ${esc(r.estado.txt)}</div>
+  $('vTiempos').innerHTML = `<div class="campo" style="margin-top:6px"><label>${r.estado ? 'Historial y tiempos · acuerdo ' + esc(m.nombre) : 'Historial de la pieza'}</label></div>
+    ${r.estado ? `<div class="sla-est ${r.estado.nivel}">⏱️ ${esc(r.estado.txt)}</div>` : ''}
     <div class="hist">${items.map(({ e, x }) => {
       if (x) return `<div class="hev limite"><b>${esc(x.txt)}</b> <span class="hf">${fLarga(x.fecha)}</span></div>`;
       const ev = EVENTOS[e.tipo] || EVENTOS.nota, n = r.nota[e.id];

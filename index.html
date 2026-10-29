@@ -638,6 +638,7 @@
     <div class="campo check-l"><input type="checkbox" id="mSla" onchange="$('mSlaC').hidden=!this.checked"><label for="mSla">Esta marca tiene acuerdo de tiempos de entrega (historial por pieza)</label></div>
     <div class="grid2" id="mSlaC" hidden>
       <div class="campo"><label>Primera entrega · días hábiles después de grabar</label><input type="number" min="1" id="mSlaE"></div>
+      <div class="campo"><label>Desde (para mostrar un rango en los términos)</label><input type="number" min="0" id="mSlaEM" placeholder="Opcional, ej: 10"></div>
       <div class="campo"><label>Primera entrega si la parrilla tiene adicionales</label><input type="number" min="0" id="mSlaEA" placeholder="Igual que sin adicionales"></div>
       <div class="campo"><label>Plazo del cliente para comentarios · días hábiles</label><input type="number" min="1" id="mSlaCo"></div>
       <div class="campo"><label>Cada ronda de cambios · días hábiles</label><input type="number" min="1" id="mSlaR"></div>
@@ -1503,7 +1504,7 @@ function renderPlan(m) {
     <div class="reglas"><h3>📌 Plan activo</h3>${m.plan ? textoFormato(m.plan) : '<p class="sin-drive">Sin plan registrado todavía.</p>'}</div>
     ${sla ? `<div class="reglas"><h3>⏱️ Acuerdo de tiempos de entrega</h3>
       <ul>
-        <li><b>Primera entrega:</b> hasta ${sla.entrega} días hábiles después de la grabación${sla.entregaAdic ? ` sin adicionales; ${sla.entregaAdic} días hábiles cuando la parrilla incluye adicionales` : ''}. El plazo empieza el primer día hábil después de grabar, con la parrilla aprobada, las tomas completas y los insumos entregados.</li>
+        <li><b>Primera entrega:</b> ${sla.entregaMin ? `de ${sla.entregaMin} a ${sla.entrega}` : 'hasta ' + sla.entrega} días hábiles después de la grabación${sla.entregaAdic ? ` sin adicionales; ${sla.entregaAdic} días hábiles cuando la parrilla incluye adicionales` : ''}. El plazo empieza el primer día hábil después de grabar, con la parrilla aprobada, las tomas completas y los insumos entregados.</li>
         <li><b>Comentarios del cliente:</b> dentro de ${sla.comentarios} días hábiles después de cada entrega. Si llegan después, la ronda de cambios corre desde que se reciben.</li>
         <li><b>Ronda de cambios:</b> ${sla.rondas} incluida${sla.rondas === 1 ? '' : 's'} por pieza, se entrega en hasta ${sla.cambios} días hábiles. Las rondas adicionales se cotizan aparte y suman ${sla.cambios} días hábiles.</li>
         <li><b>Días hábiles:</b> de lunes a viernes, sin festivos de Colombia.</li>
@@ -1957,7 +1958,7 @@ function abrirMarca(id) {
   $('mMes').value = m.mes || ''; $('mCupo').value = m.cupo || ''; $('mModo').value = m.modo || 'parrilla'; $('mDrive').value = m.drive || '';
   const sla = m.sla || { entrega: 5, comentarios: 2, cambios: 3, rondas: 1 };
   $('mSla').checked = !!m.sla; $('mSlaC').hidden = !m.sla;
-  $('mSlaE').value = sla.entrega; $('mSlaEA').value = sla.entregaAdic || ''; $('mSlaCo').value = sla.comentarios; $('mSlaR').value = sla.cambios; $('mSlaN').value = sla.rondas;
+  $('mSlaE').value = sla.entrega; $('mSlaEM').value = sla.entregaMin || ''; $('mSlaEA').value = sla.entregaAdic || ''; $('mSlaCo').value = sla.comentarios; $('mSlaR').value = sla.cambios; $('mSlaN').value = sla.rondas;
   mColor = m.color; pintarColores();
   $('mMarca').classList.add('on');
 }
@@ -1968,7 +1969,7 @@ function guardarMarca() {
   const nombre = $('mNombre').value.trim();
   if (!nombre) { $('mNombre').focus(); toast('Ponle nombre a la marca'); return; }
   const datos = { nombre, sector: $('mSector').value.trim(), logo: $('mLogo').value.trim(), modo: $('mModo').value, mes: $('mMes').value, cupo: +$('mCupo').value || 0, drive: $('mDrive').value.trim(), color: mColor,
-    sla: $('mSla').checked ? { entrega: +$('mSlaE').value || 5, entregaAdic: +$('mSlaEA').value || 0, comentarios: +$('mSlaCo').value || 2, cambios: +$('mSlaR').value || 3, rondas: +$('mSlaN').value || 0 } : null };
+    sla: $('mSla').checked ? { entrega: +$('mSlaE').value || 5, entregaMin: +$('mSlaEM').value || 0, entregaAdic: +$('mSlaEA').value || 0, comentarios: +$('mSlaCo').value || 2, cambios: +$('mSlaR').value || 3, rondas: +$('mSlaN').value || 0 } : null };
   if (editMarca) Object.assign(db.marcas.find(m => m.id === editMarca), datos);
   else db.marcas.push({ id: uid(), etapa: 'parrilla', ...datos });
   cerrar('mMarca'); guardar(); toast('Marca guardada');

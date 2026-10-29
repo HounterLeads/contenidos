@@ -865,6 +865,9 @@ function fCorta(s) { if (!s) return ''; const d = fecha(s); return d.getDate() +
 function nombreMes(d, conAnio) { const t = d.toLocaleDateString('es-CO', { month: 'long' }); return t[0].toUpperCase() + t.slice(1) + (conAnio ? ' ' + d.getFullYear() : ''); }
 function hora12(h) { if (!h) return ''; let [H, M] = h.split(':').map(Number); const ap = H >= 12 ? 'p. m.' : 'a. m.'; H = H % 12 || 12; return H + ':' + String(M).padStart(2, '0') + ' ' + ap; }
 function marcaDe(id) { return db.marcas.find(m => m.id === id) || { nombre: '—', color: '#999' }; }
+const COLOR_PAUTA = '#7C3AED';
+function colorPieza(p) { return p.uso === 'Pauta' ? COLOR_PAUTA : marcaDe(p.marca).color; }
+function franjaPauta(p) { return p.uso === 'Orgánico + pauta' ? `;box-shadow:inset 5px 0 0 ${COLOR_PAUTA}` : ''; }
 function proyDe(id) { return db.proyectos.find(p => p.id === id); }
 function esc(s) { return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 function logo(m) { return m.logo ? `<img class="mini-logo" src="${esc(m.logo)}" alt="">` : `<span class="mini-logo sin">${m.emoji || esc((m.nombre || '?')[0])}</span>`; }
@@ -1144,7 +1147,7 @@ function agenda(piezas) {
     const m = marcaDe(p.marca), f = FORMATOS[p.formato] || FORMATOS.reel, prev = drivePreview(p.final), pr = proyDe(p.proyecto);
     const largo = p.copy && (p.copy.length > 260 || p.copy.split('\n').length > 4);
     html += `<div class="post">
-      <div class="post-fecha" style="background:${m.color}"><div class="dsem">${DIAS[d.getDay()].slice(0, 3)}</div><div class="dnum">${d.getDate()}</div><div class="hora">${p.hora ? hora12(p.hora) : 'hora ?'}</div></div>
+      <div class="post-fecha" style="background:${colorPieza(p)}${franjaPauta(p)}"><div class="dsem">${DIAS[d.getDay()].slice(0, 3)}</div><div class="dnum">${d.getDate()}</div><div class="hora">${p.hora ? hora12(p.hora) : 'hora ?'}</div></div>
       <div class="post-cuerpo">
         <div class="post-top">${f[0]} ${f[1]} · ${esc(p.red || '')}${pr ? ' · ' + esc(pr.nombre) : ''} ${chipEstado(p.estado)}${!CLIENTE && atrasada(p) ? ' <span class="tarde">⚠ atrasada</span>' : ''}</div>
         ${p.adicional ? '<span class="adic" title="Fuera del presupuesto del plan">Adicional · fuera del presupuesto</span>' : ''}
@@ -1169,11 +1172,11 @@ function calendario(ps) {
     const d = new Date(ini); d.setDate(ini.getDate() + i);
     const s = iso(d);
     const chips = ps.filter(p => p.pub === s).sort((a, b) => (a.hora || '99').localeCompare(b.hora || '99'))
-      .map(p => `<span class="chip ${p.adicional ? 'es-adic' : ''}" style="background:${marcaDe(p.marca).color}" title="${esc(p.titulo)}${p.adicional ? ' · ADICIONAL' : ''}" onclick="verPieza('${p.id}')">${miniUrl(p) ? `<img class="chip-img" src="${miniUrl(p)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<b>${p.hora ? hora12(p.hora).replace(' ', '').replace('. m.', '') : ''}</b>${esc(p.titulo)}</span>`)
+      .map(p => `<span class="chip ${p.adicional ? 'es-adic' : ''}" style="background:${colorPieza(p)}${franjaPauta(p)}" title="${esc(p.titulo)}${p.adicional ? ' · ADICIONAL' : ''}${p.uso && p.uso !== 'Orgánico' ? ' · ' + esc(p.uso).toUpperCase() : ''}" onclick="verPieza('${p.id}')">${miniUrl(p) ? `<img class="chip-img" src="${miniUrl(p)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<b>${p.hora ? hora12(p.hora).replace(' ', '').replace('. m.', '') : ''}</b>${esc(p.titulo)}</span>`)
       .concat(CLIENTE ? [] : ps.filter(p => p.grab === s).map(p => `<span class="chip grab" style="border-color:${marcaDe(p.marca).color}" title="Grabación · ${esc(p.titulo)}" onclick="verPieza('${p.id}')">🎥 ${esc(p.titulo)}</span>`));
     html += `<div class="dia ${d.getMonth() !== planMes.getMonth() ? 'fuera' : ''} ${s === hoy ? 'hoy' : ''}"><div class="n">${d.getDate()}</div>${chips.join('')}</div>`;
   }
-  return html + `</div><div class="leyenda"><span>■ Publicación (con hora)</span><span class="solo-equipo">⬚ Grabación</span></div>`;
+  return html + `</div><div class="leyenda"><span>■ Orgánico (color de la marca)</span><span><span style="color:${COLOR_PAUTA}">■</span> Pauta</span><span><span style="border-left:4px solid ${COLOR_PAUTA};padding-left:4px">■</span> Orgánico + pauta</span><span class="solo-equipo">⬚ Grabación</span></div>`;
 }
 
 // ─── Parrilla (proyectos de la marca) ───

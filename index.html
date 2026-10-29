@@ -1372,7 +1372,15 @@ function calcTiempos(p) {
   const sla = marcaDe(p.marca).sla; if (!sla) return null;
   const h = historial(p), hoy = hoyISO(), filas = [];
   const grab = h.filter(e => e.tipo === 'grabacion').pop();
-  if (!grab) return { h, filas, nota: {}, aTiempo: { entrega: null, rondas: [] }, estado: ['publicada', 'programada', 'aprobada'].includes(p.estado) ? { txt: 'Sin historial de tiempos registrado', nivel: 'gris', corto: 'Sin historial' } : { txt: 'Sin grabación registrada: el plazo aún no empieza', nivel: 'gris', corto: 'Sin grabar' } };
+  if (!grab) {
+    // Sin grabación (por ejemplo, piezas gráficas): se muestra el último paso registrado
+    const pub0 = h.find(e => e.tipo === 'publicada'), apr0 = h.find(e => e.tipo === 'aprobada'), rondas0 = h.filter(e => e.tipo === 'comentarios').length;
+    const est0 = pub0 ? { txt: `Publicada el ${fLarga(pub0.fecha)}`, nivel: 'verde', corto: 'Publicada' }
+      : apr0 ? { txt: `Aprobada el ${fLarga(apr0.fecha)}${rondas0 ? ' después de ' + rondas0 + (rondas0 === 1 ? ' ronda' : ' rondas') + ' de cambios' : ' sin cambios'}`, nivel: 'verde', corto: 'Aprobada' }
+      : h.length ? { txt: 'Sin grabación registrada: los plazos se calculan desde la grabación', nivel: 'gris', corto: 'En curso' }
+      : ['publicada', 'programada', 'aprobada'].includes(p.estado) ? { txt: 'Sin historial de tiempos registrado', nivel: 'gris', corto: 'Sin historial' } : { txt: 'Sin grabación registrada: el plazo aún no empieza', nivel: 'gris', corto: 'Sin grabar' };
+    return { h, filas, nota: {}, aTiempo: { entrega: null, rondas: [] }, estado: est0 };
+  }
   let base = grab.fecha;
   h.filter(e => e.tipo === 'reinicio' && e.fecha > base).forEach(e => base = e.fecha);
   const dias = diasEntrega(p, sla), lim1 = sumarHabiles(base, dias);
@@ -1433,7 +1441,7 @@ function pintarTiempos(p) {
   const m = marcaDe(p.marca), r = calcTiempos(p);
   if (!r) { $('vTiempos').innerHTML = ''; return; }
   const items = r.h.map(e => ({ e, f: e.fecha })).concat(r.filas.map(x => ({ x, f: x.fecha })))
-    .sort((a, b) => a.f.localeCompare(b.f) || (a.x ? 1 : -1));
+    .sort((a, b) => a.f.localeCompare(b.f) || (a.x ? 1 : 0) - (b.x ? 1 : 0));
   $('vTiempos').innerHTML = `<div class="campo" style="margin-top:6px"><label>Historial y tiempos · acuerdo ${esc(m.nombre)}</label></div>
     <div class="sla-est ${r.estado.nivel}">⏱️ ${esc(r.estado.txt)}</div>
     <div class="hist">${items.map(({ e, x }) => {

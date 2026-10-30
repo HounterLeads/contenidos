@@ -186,7 +186,9 @@
   .e-publicada{background:#0B0A2E;color:#fff}
   .e-suspendida{background:#FFE9D6;color:#B54708}
   .e-cancelada{background:#EFEFF2;color:#8A8CA0;text-decoration:line-through}
+  .e-aplazada{background:#FFF4CC;color:#8A6A00}
   .inactiva{opacity:.5}
+  .motivo{font-size:.74rem;color:#B54708;background:#FFF4EA;border-radius:8px;padding:5px 9px;margin-top:5px;white-space:pre-wrap}
   .tarde{font-size:.68rem;color:#B42318;font-weight:700}
   .drive{display:inline-flex;align-items:center;gap:5px;font-size:.74rem;font-weight:700;color:#1C7A47;background:#E0F5E9;padding:5px 11px;border-radius:50px;text-decoration:none;white-space:nowrap}
   .drive:hover{background:#C9EDD8}
@@ -517,8 +519,9 @@
       <div class="campo"><label>Marca</label><select id="pMarca"></select></div>
       <div class="campo" id="pProyectoC"><label>Parrilla o proyecto</label><select id="pProyecto"></select></div>
       <div class="campo"><label>Formato</label><select id="pFormato"></select></div>
-      <div class="campo"><label>Estado</label><select id="pEstado"></select></div>
+      <div class="campo"><label>Estado</label><select id="pEstado" onchange="$('pMotivoC').hidden=activa({estado:this.value})"></select></div>
     </div>
+    <div class="campo" id="pMotivoC" hidden><label>¿Qué pasó y por qué se suspende, aplaza o cancela?</label><textarea id="pMotivo" placeholder="Ej: El cliente pidió aplazarla para diciembre porque…"></textarea></div>
     <div class="grid3">
       <div class="campo"><label>Publicación · día</label><input type="date" id="pPub"></div>
       <div class="campo"><label>Publicación · hora</label><input type="time" id="pHora"></div>
@@ -768,13 +771,16 @@ const ESTADOS = [
   { id: 'programada', nombre: 'Programada' },
   { id: 'publicada', nombre: 'Publicada' },
   { id: 'suspendida', nombre: 'Suspendida' },
+  { id: 'aplazada', nombre: 'Aplazada' },
   { id: 'cancelada', nombre: 'Cancelada' }
 ];
 // El cliente ve los estados internos agrupados
-const ESTADO_CLIENTE = { idea: 'En producción', guion: 'En producción', grabacion: 'En producción', edicion: 'En producción', revision: 'Lista para revisar', aprobada: 'Aprobada', programada: 'Programada', publicada: 'Publicada', suspendida: 'Suspendida', cancelada: 'Cancelada' };
-// Suspendidas y canceladas: no cuentan en el cupo ni generan alertas
-const INACTIVAS = ['suspendida', 'cancelada'];
+const ESTADO_CLIENTE = { idea: 'En producción', guion: 'En producción', grabacion: 'En producción', edicion: 'En producción', revision: 'Lista para revisar', aprobada: 'Aprobada', programada: 'Programada', publicada: 'Publicada', suspendida: 'Suspendida', aplazada: 'Aplazada', cancelada: 'Cancelada' };
+// Suspendidas, aplazadas y canceladas: no cuentan en el cupo ni generan alertas
+const INACTIVAS = ['suspendida', 'aplazada', 'cancelada'];
 function activa(p) { return !INACTIVAS.includes(p.estado); }
+// Qué pasó con la pieza y por qué, visible para equipo y cliente
+function motivoHtml(p) { return activa(p) ? '' : `<div class="motivo"><b>${ESTADOS.find(e => e.id === p.estado).nombre}:</b> ${p.motivo ? esc(p.motivo) : 'sin motivo registrado'}</div>`; }
 const LISTAS = ['aprobada', 'programada', 'publicada'];
 const PROGRAMADAS = ['programada', 'publicada'];
 // Etapas del ciclo mensual de cada marca
@@ -1161,6 +1167,7 @@ function agenda(piezas) {
         <div class="post-top">${f[0]} ${f[1]} · ${esc(p.red || '')}${pr ? ' · ' + esc(pr.nombre) : ''} ${chipEstado(p.estado)}${!CLIENTE && atrasada(p) ? ' <span class="tarde">⚠ atrasada</span>' : ''}</div>
         ${p.adicional ? '<span class="adic" title="Fuera del presupuesto del plan">Adicional · fuera del presupuesto</span>' : ''}
         <h4>${esc(p.titulo)} ${p.uso && p.uso !== 'Orgánico' ? `<span class="uso">${esc(p.uso)}</span>` : ''}</h4>
+        ${motivoHtml(p)}
         <div class="copy ${p.copy ? '' : 'vacio-copy'}">${p.copy ? esc(p.copy) : 'Copy pendiente'}</div>
         ${largo ? `<button class="mas" onclick="this.previousElementSibling.classList.toggle('abierto');this.textContent=this.textContent==='Ver copy completo'?'Ver menos':'Ver copy completo'">Ver copy completo</button>` : ''}
         <div class="post-acc">
@@ -1195,7 +1202,7 @@ function tablaParrilla(piezas) {
   return `<table class="tabla"><thead><tr><th>#</th><th>Pieza</th><th class="col-opc">Sale</th><th>Estado</th>${conSla ? '<th>Tiempos</th>' : ''}<th></th></tr></thead><tbody>
     ${piezas.map((p, i) => { const f = FORMATOS[p.formato] || FORMATOS.reel; return `<tr class="${p.adicional ? 'es-adic' : ''}" onclick="verPieza('${p.id}')">
       <td class="num">${String(i + 1).padStart(2, '0')}</td>
-      <td><div class="pieza-cel">${thumb(p)}<div><div class="tit">${esc(p.titulo)} ${p.adicional ? '<span class="adic" title="Fuera del presupuesto del plan">Adicional</span>' : ''} ${p.uso && p.uso !== 'Orgánico' ? `<span class="uso">${esc(p.uso)}</span>` : ''}</div><div class="fecha">${f[0]} ${f[1]}${p.red ? ' · ' + esc(p.red) : ''}${!CLIENTE && p.resp ? ' · 👤 ' + esc(p.resp) : ''}</div></div></div></td>
+      <td><div class="pieza-cel">${thumb(p)}<div><div class="tit">${esc(p.titulo)} ${p.adicional ? '<span class="adic" title="Fuera del presupuesto del plan">Adicional</span>' : ''} ${p.uso && p.uso !== 'Orgánico' ? `<span class="uso">${esc(p.uso)}</span>` : ''}</div><div class="fecha">${f[0]} ${f[1]}${p.red ? ' · ' + esc(p.red) : ''}${!CLIENTE && p.resp ? ' · 👤 ' + esc(p.resp) : ''}</div>${motivoHtml(p)}</div></div></td>
       <td class="fecha col-opc">${p.pub ? fCorta(p.pub) + (p.hora ? ' · ' + hora12(p.hora) : '') : 'por definir'}${!CLIENTE && atrasada(p) ? '<br><span class="tarde">⚠ atrasada</span>' : ''}</td>
       <td>${chipEstado(p.estado)}</td>
       ${conSla ? `<td>${miniTiempos(p)}</td>` : ''}
@@ -1365,10 +1372,13 @@ const EVENTOS = {
   entregaCambios: { ic: '🔁', nombre: 'Entrega de cambios' },
   aprobada: { ic: '✅', nombre: 'Aprobada por el cliente' },
   publicada: { ic: '📣', nombre: 'Publicada' },
+  suspendida: { ic: '🛑', nombre: 'Se suspendió' },
+  aplazada: { ic: '📆', nombre: 'Se aplazó' },
+  cancelada: { ic: '✖️', nombre: 'Se canceló' },
   nota: { ic: '📝', nombre: 'Nota' }
 };
 // Al registrar un evento, el estado de la pieza se actualiza solo
-const EVENTO_ESTADO = { grabacion: 'edicion', entrega: 'revision', comentarios: 'edicion', entregaCambios: 'revision', aprobada: 'aprobada', publicada: 'publicada' };
+const EVENTO_ESTADO = { grabacion: 'edicion', entrega: 'revision', comentarios: 'edicion', entregaCambios: 'revision', aprobada: 'aprobada', publicada: 'publicada', suspendida: 'suspendida', aplazada: 'aplazada', cancelada: 'cancelada' };
 function historial(p) {
   const h = (p.historial || []).slice();
   if (p.grab && !h.some(e => e.tipo === 'grabacion')) h.push({ id: '_grab', tipo: 'grabacion', fecha: p.grab, nota: '', auto: true });
@@ -1476,10 +1486,12 @@ function pintarTiempos(p) {
 function registrarEvento(id) {
   const p = db.piezas.find(x => x.id === id), tipo = $('evTipo').value, f = $('evFecha').value;
   if (!f) { toast('Pon la fecha'); return; }
+  if (INACTIVAS.includes(tipo) && !$('evNota').value.trim()) { $('evNota').focus(); toast('Escribe qué pasó y por qué'); return; }
   p.historial = p.historial || [];
   p.historial.push({ id: uid(), tipo, fecha: f, nota: $('evNota').value.trim(), por: sesion.nombre, reg: new Date().toISOString() });
   if (tipo === 'grabacion') p.grab = f;
   if (EVENTO_ESTADO[tipo]) p.estado = EVENTO_ESTADO[tipo];
+  if (INACTIVAS.includes(tipo)) p.motivo = $('evNota').value.trim();
   guardar(); verPieza(id); toast('Registrado en el historial');
 }
 function borrarEvento(pid, eid) {
@@ -1772,7 +1784,7 @@ const GESTION = [
   { id: 'entregada', nombre: 'Entregada · en revisión', corto: 'Entregadas', estados: ['revision'], cls: 'e-revision' },
   { id: 'lista', nombre: 'Aprobada', corto: 'Aprobadas', estados: ['aprobada', 'programada'], cls: 'e-aprobada' },
   { id: 'publicada', nombre: 'Publicada', estados: ['publicada'], cls: 'e-publicada' },
-  { id: 'inactiva', nombre: 'Suspendida o cancelada', estados: INACTIVAS, cls: 'e-suspendida' }
+  { id: 'inactiva', nombre: 'Suspendida, aplazada o cancelada', estados: INACTIVAS, cls: 'e-suspendida' }
 ];
 function gestionDe(p) { return GESTION.find(g => g.estados.includes(p.estado)) || GESTION[0]; }
 function resumenGestion(m, compacto) {
@@ -1789,7 +1801,7 @@ function renderSolicitudes(m) {
   const listas = ps.filter(p => ['aprobada', 'programada', 'publicada'].includes(p.estado)).sort((a, b) => (b.pub || '').localeCompare(a.pub || ''));
   const tabla = lista => `<table class="tabla"><thead><tr><th>Contenido</th><th class="col-opc">Solicitado</th><th class="col-opc">Grabación</th><th>Gestión</th><th class="col-opc">Sale</th>${m.sla ? '<th>Tiempos</th>' : ''}<th></th></tr></thead><tbody>
     ${lista.map(p => { const f = FORMATOS[p.formato] || FORMATOS.reel, g = gestionDe(p); return `<tr class="${p.adicional ? 'es-adic' : ''}" onclick="verPieza('${p.id}')">
-      <td><div class="pieza-cel">${thumb(p)}<div><div class="tit">${esc(p.titulo)} ${p.adicional ? '<span class="adic">Adicional</span>' : ''}</div><div class="fecha">${f[0]} ${f[1]}${p.red ? ' · ' + esc(p.red) : ''}${!CLIENTE && p.notas ? ' · ' + esc(p.notas.slice(0, 50)) : ''}</div></div></div></td>
+      <td><div class="pieza-cel">${thumb(p)}<div><div class="tit">${esc(p.titulo)} ${p.adicional ? '<span class="adic">Adicional</span>' : ''}</div><div class="fecha">${f[0]} ${f[1]}${p.red ? ' · ' + esc(p.red) : ''}${!CLIENTE && p.notas ? ' · ' + esc(p.notas.slice(0, 50)) : ''}</div>${motivoHtml(p)}</div></div></td>
       <td class="fecha col-opc">${p.solicitada ? fCorta(p.solicitada) : '—'}</td>
       <td class="fecha col-opc">${p.grab ? fLarga(p.grab) : g.id === 'solicitada' || g.id === 'porGrabar' ? 'por grabar' : 'grabada'}</td>
       <td>${g.id === 'inactiva' ? chipEstado(p.estado) : `<span class="estado ${g.cls}">${g.nombre}</span>`}</td>
@@ -1801,7 +1813,7 @@ function renderSolicitudes(m) {
       <button class="btn sm solo-equipo" onclick="abrirPieza(null,'${m.id}');$('pSol').value=hoyISO();$('mpTitulo').textContent='Nueva solicitud'">+ Solicitud</button></div>
     ${enGestion.length ? tabla(enGestion) : '<div class="vacio">No hay contenidos en gestión.</div>'}
     ${listas.length ? `<div class="sec-label" style="margin-top:30px">Aprobados y publicados</div>${tabla(listas)}` : ''}
-    ${inactivas.length ? `<div class="sec-label" style="margin-top:30px">Suspendidos y cancelados</div>${tabla(inactivas)}` : ''}
+    ${inactivas.length ? `<div class="sec-label" style="margin-top:30px">Suspendidos, aplazados y cancelados</div>${tabla(inactivas)}` : ''}
   </div></section>`;
 }
 
@@ -1814,6 +1826,7 @@ function verPieza(id) {
   $('vTop').innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px;color:var(--ink)">${logo(m)}${esc(m.nombre)}</span> · ${f[0]} ${f[1]}${pr ? ' · ' + esc(pr.nombre) : ''} ${chipEstado(p.estado)}`;
   $('vTitulo').innerHTML = esc(p.titulo) + (p.adicional ? ' <span class="adic">Adicional · fuera del presupuesto</span>' : '') + (p.uso && p.uso !== 'Orgánico' ? ` <span class="uso">${esc(p.uso)}</span>` : '');
   $('vCuando').textContent = p.pub ? `Sale el ${DIAS[fecha(p.pub).getDay()]} ${fCorta(p.pub)}${p.hora ? ' a las ' + hora12(p.hora) : ''} · ${p.red || ''}` : 'Fecha de publicación por definir';
+  $('vCuando').insertAdjacentHTML('beforeend', motivoHtml(p));
   $('vCopy').textContent = p.copy || 'Copy pendiente';
   $('vCopy').classList.toggle('vacio-copy', !p.copy);
   $('vDatos').innerHTML = CLIENTE ? '' : [
@@ -1857,8 +1870,9 @@ function abrirPieza(id, marca, proyecto) {
   $('mpTitulo').textContent = id ? 'Editar pieza' : 'Nueva pieza';
   $('pBorrar').style.display = id ? '' : 'none';
   $('pAdic').checked = !!p.adicional; $('pUso').value = p.uso || 'Orgánico';
-  const campos = { pTitulo: 'titulo', pMarca: 'marca', pFormato: 'formato', pEstado: 'estado', pResp: 'resp', pGrab: 'grab', pSol: 'solicitada', pPub: 'pub', pHora: 'hora', pRed: 'red', pGuion: 'guion', pCopy: 'copy', pRef: 'ref', pFinal: 'final', pNotas: 'notas' };
+  const campos = { pTitulo: 'titulo', pMarca: 'marca', pFormato: 'formato', pEstado: 'estado', pResp: 'resp', pGrab: 'grab', pSol: 'solicitada', pPub: 'pub', pHora: 'hora', pRed: 'red', pGuion: 'guion', pCopy: 'copy', pRef: 'ref', pFinal: 'final', pNotas: 'notas', pMotivo: 'motivo' };
   Object.entries(campos).forEach(([el, k]) => $(el).value = p[k] || '');
+  $('pMotivoC').hidden = activa(p);
   llenarProyectos(p.marca, p.proyecto, !id);
   $('mPieza').classList.add('on');
   setTimeout(() => $('pTitulo').focus(), 50);
@@ -1866,9 +1880,15 @@ function abrirPieza(id, marca, proyecto) {
 function guardarPieza() {
   const titulo = $('pTitulo').value.trim();
   if (!titulo) { $('pTitulo').focus(); toast('Ponle un título a la pieza'); return; }
-  const datos = { titulo, marca: $('pMarca').value, proyecto: $('pProyecto').value, formato: $('pFormato').value, estado: $('pEstado').value, resp: $('pResp').value.trim(), grab: $('pGrab').value, solicitada: $('pSol').value, pub: $('pPub').value, hora: $('pHora').value, red: $('pRed').value, guion: $('pGuion').value, copy: $('pCopy').value, ref: $('pRef').value.trim(), final: $('pFinal').value.trim(), notas: $('pNotas').value, uso: $('pUso').value, adicional: $('pAdic').checked };
-  if (editPieza) Object.assign(db.piezas.find(x => x.id === editPieza), datos);
-  else db.piezas.push({ id: uid(), ...datos });
+  const estado = $('pEstado').value, motivo = $('pMotivo').value.trim();
+  if (INACTIVAS.includes(estado) && !motivo) { $('pMotivo').focus(); toast('Escribe qué pasó y por qué'); return; }
+  const datos = { titulo, marca: $('pMarca').value, proyecto: $('pProyecto').value, formato: $('pFormato').value, estado: $('pEstado').value, resp: $('pResp').value.trim(), grab: $('pGrab').value, solicitada: $('pSol').value, pub: $('pPub').value, hora: $('pHora').value, red: $('pRed').value, guion: $('pGuion').value, copy: $('pCopy').value, ref: $('pRef').value.trim(), final: $('pFinal').value.trim(), notas: $('pNotas').value, uso: $('pUso').value, adicional: $('pAdic').checked, motivo: INACTIVAS.includes(estado) ? motivo : '' };
+  const previa = editPieza ? db.piezas.find(x => x.id === editPieza) : null;
+  // Suspender, aplazar o cancelar queda en el historial con su motivo
+  const evento = INACTIVAS.includes(estado) && (!previa || previa.estado !== estado || previa.motivo !== motivo)
+    ? { id: uid(), tipo: estado, fecha: hoyISO(), nota: motivo, por: sesion.nombre, reg: new Date().toISOString() } : null;
+  if (previa) { Object.assign(previa, datos); if (evento) previa.historial = (previa.historial || []).concat(evento); }
+  else db.piezas.push({ id: uid(), ...datos, ...(evento ? { historial: [evento] } : {}) });
   if (datos.proyecto) abiertosProy.add(datos.proyecto);
   cerrar('mPieza'); guardar(); toast('Pieza guardada');
 }

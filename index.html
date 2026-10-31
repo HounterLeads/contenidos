@@ -256,6 +256,17 @@
   .dia-item .di-mini img{width:100%;height:100%;object-fit:cover}
   .dia-item .di-go{font-size:.78rem;font-weight:700;color:var(--peri);white-space:nowrap}
   .acc-equipo{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px;padding:10px;background:#F6F6FF;border:1px solid var(--line);border-radius:12px}
+  #mEliminar{z-index:60}
+  .modal.alerta{max-width:460px;text-align:center;border-top:6px solid #D92D20}
+  .alerta-ic{width:56px;height:56px;border-radius:50%;background:#FEE4E2;color:#D92D20;font-size:1.6rem;display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+  .alerta-pieza{display:flex;align-items:center;gap:10px;text-align:left;background:#F9F9FB;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:14px 0}
+  .alerta-pieza b{font-size:.92rem}
+  .alerta-aviso{background:#FEF3F2;color:#B42318;border-radius:10px;padding:10px 12px;font-size:.84rem;font-weight:600;margin-bottom:6px}
+  .alerta .modal-acc{justify-content:center}
+  .btn.peligro{background:#D92D20;border-color:#D92D20;color:#fff}
+  .btn.peligro:hover{background:#B42318}
+  .borrar-fila{background:none;border:0;cursor:pointer;font-size:1rem;opacity:.45;padding:4px 6px;margin-left:6px;border-radius:8px}
+  .borrar-fila:hover{opacity:1;background:#FEE4E2}
   .leyenda{display:flex;gap:16px;flex-wrap:wrap;font-size:.78rem;color:var(--muted);margin-top:14px}
 
   /* TAREAS (lista tipo ClickUp) */
@@ -579,6 +590,19 @@
       <button class="btn ghost" onclick="cerrar('mDia')">Cancelar</button>
       <span class="sp"></span>
       <button class="btn" onclick="nuevaEnDia()">+ Nueva publicación para este día</button>
+    </div>
+  </div>
+</div>
+<div class="modal-bg" id="mEliminar">
+  <div class="modal alerta">
+    <div class="alerta-ic">🗑</div>
+    <h2>¿Eliminar esta pieza de forma definitiva?</h2>
+    <div class="alerta-pieza" id="eliPieza"></div>
+    <div class="alerta-aviso">Esta acción no se puede deshacer. La pieza se borra de la parrilla, del planificador y de su historial, y no se podrá recuperar.</div>
+    <p class="sub" style="margin:8px 0 18px">El video o archivo en Google Drive no se toca: sigue en la carpeta de Drive.</p>
+    <div class="modal-acc">
+      <button class="btn ghost" onclick="cerrar('mEliminar')">Cancelar</button>
+      <button class="btn peligro" onclick="confirmarEliminar()">Sí, eliminar definitivamente</button>
     </div>
   </div>
 </div>
@@ -1277,7 +1301,7 @@ function tablaParrilla(piezas) {
       <td class="fecha col-opc">${p.pub ? fCorta(p.pub) + (p.hora ? ' · ' + hora12(p.hora) : '') : 'por definir'}${!CLIENTE && atrasada(p) ? '<br><span class="tarde">⚠ atrasada</span>' : ''}</td>
       <td>${chipEstado(p.estado)}</td>
       ${conSla ? `<td>${miniTiempos(p)}</td>` : ''}
-      <td style="text-align:right">${botonDrive(p)}</td></tr>`; }).join('')}
+      <td style="text-align:right;white-space:nowrap">${botonDrive(p)}${CLIENTE ? '' : `<button class="borrar-fila" title="Eliminar pieza" onclick="event.stopPropagation();eliminarPieza('${p.id}')">🗑</button>`}</td></tr>`; }).join('')}
   </tbody></table>`;
 }
 function bloqueProyecto(pr, piezas) {
@@ -1879,7 +1903,7 @@ function renderSolicitudes(m) {
       <td>${g.id === 'inactiva' ? chipEstado(p.estado) : `<span class="estado ${g.cls}">${g.nombre}</span>`}</td>
       <td class="fecha col-opc">${p.pub ? fCorta(p.pub) + (p.hora ? ' · ' + hora12(p.hora) : '') : 'por definir'}</td>
       ${m.sla ? `<td>${miniTiempos(p)}</td>` : ''}
-      <td style="text-align:right">${botonDrive(p)}</td></tr>`; }).join('')}</tbody></table>`;
+      <td style="text-align:right;white-space:nowrap">${botonDrive(p)}${CLIENTE ? '' : `<button class="borrar-fila" title="Eliminar pieza" onclick="event.stopPropagation();eliminarPieza('${p.id}')">🗑</button>`}</td></tr>`; }).join('')}</tbody></table>`;
   $('contenido').innerHTML = `<section class="sec"><div class="wrap">
     <div class="toolbar"><div class="sec-label" style="flex:1;margin:0">Contenidos solicitados · en gestión</div>
       <button class="btn sm solo-equipo" onclick="abrirPieza(null,'${m.id}');$('pSol').value=hoyISO();$('mpTitulo').textContent='Nueva solicitud'">+ Solicitud</button></div>
@@ -1973,17 +1997,24 @@ function quitarDelPlan(id, desdeModal) {
   p.pub = ''; p.hora = '';
   cerrar(desdeModal ? 'mPieza' : 'mVer'); guardar(); toast('Quitada del planificador. Sigue en la parrilla sin fecha.');
 }
+// Eliminar de forma definitiva: siempre pasa por el recuadro de confirmación
+let eliminarId = null;
 function eliminarPieza(id) {
   const p = db.piezas.find(x => x.id === id);
-  if (!p || !confirm(`¿Eliminar “${p.titulo}” por completo?\n\nSe borra de la parrilla y del planificador. Si solo quieres cambiarle la fecha, usa “Quitar del planificador”.`)) return;
-  db.piezas = db.piezas.filter(x => x.id !== id);
-  cerrar('mVer'); guardar(); toast('Pieza eliminada');
+  if (!p || CLIENTE) return;
+  eliminarId = id;
+  const f = FORMATOS[p.formato] || FORMATOS.reel, pr = proyDe(p.proyecto);
+  $('eliPieza').innerHTML = `<span style="width:40px;height:50px;border-radius:8px;overflow:hidden;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-shrink:0">${miniUrl(p) ? `<img src="${miniUrl(p)}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.replaceWith('${f[0]}')">` : f[0]}</span>
+    <div><b>${esc(p.titulo)}</b><br><small style="color:var(--muted)">${esc(marcaDe(p.marca).nombre)} · ${f[1]}${pr ? ' · ' + esc(pr.nombre) : ''} · ${ESTADOS.find(e => e.id === p.estado)?.nombre || ''}</small></div>`;
+  $('mEliminar').classList.add('on');
 }
-function borrarPieza() {
-  if (!confirm('¿Eliminar esta pieza por completo?\n\nSe borra de la parrilla y del planificador. Si solo quieres cambiarle la fecha, usa “Quitar del planificador”.')) return;
-  db.piezas = db.piezas.filter(x => x.id !== editPieza);
-  cerrar('mPieza'); guardar(); toast('Pieza eliminada');
+function confirmarEliminar() {
+  const p = db.piezas.find(x => x.id === eliminarId);
+  db.piezas = db.piezas.filter(x => x.id !== eliminarId);
+  ['mEliminar', 'mPieza', 'mVer'].forEach(cerrar);
+  guardar(); toast(`“${p ? p.titulo : 'La pieza'}” se eliminó`);
 }
+function borrarPieza() { eliminarPieza(editPieza); }
 
 // ═══ Modal tarea ═══
 function piezasDeMarca(marca, sel) {

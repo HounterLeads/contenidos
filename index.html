@@ -243,6 +243,18 @@
   .chip{display:block;font-size:.7rem;font-weight:600;padding:3px 7px;border-radius:7px;margin-top:4px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}
   .chip b{font-weight:800;opacity:.85;margin-right:3px}
   .chip.grab{background:#fff!important;border:1.5px dashed;color:var(--ink)}
+  .dia.clic{cursor:pointer;transition:border-color .15s,background .15s}
+  .dia.clic:hover{border-color:var(--peri);background:#FAFAFF}
+  .dia.clic:hover .n::after{content:' +';color:var(--peri)}
+  .dia-lista{display:flex;flex-direction:column;gap:8px;max-height:46vh;overflow-y:auto;margin:6px 0 16px}
+  .dia-item{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:9px 12px;cursor:pointer;background:#fff;text-align:left;width:100%;font:inherit;color:var(--ink)}
+  .dia-item:hover{border-color:var(--peri);background:#FAFAFF}
+  .dia-item .di-t{flex:1;min-width:0}
+  .dia-item .di-t b{display:block;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .dia-item .di-t small{color:var(--muted);font-size:.75rem}
+  .dia-item .di-mini{width:40px;height:50px;border-radius:8px;overflow:hidden;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+  .dia-item .di-mini img{width:100%;height:100%;object-fit:cover}
+  .dia-item .di-go{font-size:.78rem;font-weight:700;color:var(--peri);white-space:nowrap}
   .leyenda{display:flex;gap:16px;flex-wrap:wrap;font-size:.78rem;color:var(--muted);margin-top:14px}
 
   /* TAREAS (lista tipo ClickUp) */
@@ -552,6 +564,22 @@
 </div>
 
 <!-- MODAL VER PIEZA (equipo y cliente) -->
+<div class="modal-bg" id="mDia">
+  <div class="modal">
+    <h2 id="dTitulo">Publicar este día</h2>
+    <p class="sub">Elige una pieza que aún no tiene fecha de publicación o crea una nueva para este día.</p>
+    <div class="grid2">
+      <div class="campo"><label>Hora de publicación (opcional)</label><input type="time" id="dHora"></div>
+    </div>
+    <div class="campo"><label>Piezas sin fecha de publicación</label></div>
+    <div class="dia-lista" id="dLista"></div>
+    <div class="modal-acc">
+      <button class="btn ghost" onclick="cerrar('mDia')">Cancelar</button>
+      <span class="sp"></span>
+      <button class="btn" onclick="nuevaEnDia()">+ Nueva publicación para este día</button>
+    </div>
+  </div>
+</div>
 <div class="modal-bg" id="mVer">
   <div class="modal ancho">
     <div class="ver-grid">
@@ -779,6 +807,9 @@ const ESTADO_CLIENTE = { idea: 'En producción', guion: 'En producción', grabac
 // Suspendidas, aplazadas y canceladas: no cuentan en el cupo ni generan alertas
 const INACTIVAS = ['suspendida', 'aplazada', 'cancelada'];
 function activa(p) { return !INACTIVAS.includes(p.estado); }
+// Cupo del plan descontando las piezas del plan suspendidas, aplazadas o canceladas (ej: 10 del plan, 1 suspendida → 9)
+function cupoNeto(cupo, piezas) { return Math.max(0, (+cupo || 0) - piezas.filter(p => !p.adicional && !activa(p)).length); }
+function inactivasMes(marca, mes) { return db.piezas.filter(p => p.marca === marca && p.pub && p.pub.startsWith(mes)); }
 // Qué pasó con la pieza y por qué, visible para equipo y cliente
 function motivoHtml(p) { return activa(p) ? '' : `<div class="motivo"><b>${ESTADOS.find(e => e.id === p.estado).nombre}:</b> ${p.motivo ? esc(p.motivo) : 'sin motivo registrado'}</div>`; }
 const LISTAS = ['aprobada', 'programada', 'publicada'];
@@ -1022,7 +1053,7 @@ function resumenMarca(m, mes) {
   const ps = db.piezas.filter(p => p.marca === m.id && p.pub && p.pub.startsWith(mes) && activa(p));
   const prog = ps.filter(p => PROGRAMADAS.includes(p.estado)).length;
   const plan = ps.filter(p => !p.adicional), adic = ps.length - plan.length;
-  const meta = Math.max(plan.length, +m.cupo || 0);
+  const meta = Math.max(plan.length, cupoNeto(m.cupo, inactivasMes(m.id, mes)));
   return { total: ps.length, prog: plan.filter(p => PROGRAMADAS.includes(p.estado)).length, adic, meta, alertas: alertas(m.id).filter(a => a.nivel !== 'verde').length };
 }
 function renderInicio() {
@@ -1033,7 +1064,7 @@ function renderInicio() {
   const mes = mesRef();
   const ps = db.piezas.filter(p => p.pub && p.pub.startsWith(mes) && activa(p));
   const prog = ps.filter(p => PROGRAMADAS.includes(p.estado)).length;
-  const meta = db.marcas.reduce((s, m) => s + Math.max(+m.cupo || 0, ps.filter(p => p.marca === m.id).length), 0);
+  const meta = db.marcas.reduce((s, m) => s + Math.max(cupoNeto(m.cupo, inactivasMes(m.id, mes)), ps.filter(p => p.marca === m.id && !p.adicional).length), 0);
   const revision = db.piezas.filter(p => p.estado === 'revision').length;
   const vencidas = db.tareas.filter(t => t.estado !== 'hecha' && t.vence && t.vence < hoyISO()).length;
   $('stats').innerHTML = `
@@ -1117,7 +1148,7 @@ function renderMarca() {
   const prog = delPlan.filter(p => PROGRAMADAS.includes(p.estado)).length;
   const tAb = tareasVisibles(m.id).filter(x => x.estado !== 'hecha').length;
   $('stats').innerHTML = `
-    ${m.modo === 'solicitudes' ? `<div class="stat"><b>${ps.filter(p => activa(p) && !['aprobada', 'programada', 'publicada'].includes(p.estado)).length}</b><span>contenidos en gestión</span></div>` : `<div class="stat"><b>${prog}<small> / ${Math.max(delPlan.length, +m.cupo || 0)}</small></b><span>del plan programadas en ${nombreMes(planMes).toLowerCase()}${nAdic ? ` · <span class="adic">+${nAdic} adicional${nAdic === 1 ? '' : 'es'}</span>` : ''}</span></div>`}
+    ${m.modo === 'solicitudes' ? `<div class="stat"><b>${ps.filter(p => activa(p) && !['aprobada', 'programada', 'publicada'].includes(p.estado)).length}</b><span>contenidos en gestión</span></div>` : `<div class="stat"><b>${prog}<small> / ${Math.max(delPlan.length, cupoNeto(m.cupo, inactivasMes(m.id, mesRef())))}</small></b><span>del plan programadas en ${nombreMes(planMes).toLowerCase()}${nAdic ? ` · <span class="adic">+${nAdic} adicional${nAdic === 1 ? '' : 'es'}</span>` : ''}</span></div>`}
     <div class="stat"><b>${ps.filter(p => ['idea', 'guion', 'grabacion', 'edicion'].includes(p.estado)).length}</b><span>en producción</span></div>
     <div class="stat"><b>${ps.filter(p => p.estado === 'revision').length}</b><span>${CLIENTE ? 'listas para que revises' : 'esperando al cliente'}</span></div>
     <div class="stat"><b>${tAb}</b><span>tareas abiertas</span></div>`;
@@ -1188,11 +1219,44 @@ function calendario(ps) {
     const d = new Date(ini); d.setDate(ini.getDate() + i);
     const s = iso(d);
     const chips = ps.filter(p => p.pub === s).sort((a, b) => (a.hora || '99').localeCompare(b.hora || '99'))
-      .map(p => `<span class="chip ${p.adicional ? 'es-adic' : ''} ${activa(p) ? '' : 'inactiva'}" style="background:${colorPieza(p)}${franjaPauta(p)}" title="${esc(p.titulo)}${p.adicional ? ' · ADICIONAL' : ''}${p.uso && p.uso !== 'Orgánico' ? ' · ' + esc(p.uso).toUpperCase() : ''}" onclick="verPieza('${p.id}')">${miniUrl(p) ? `<img class="chip-img" src="${miniUrl(p)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<b>${p.hora ? hora12(p.hora).replace(' ', '').replace('. m.', '') : ''}</b>${esc(p.titulo)}</span>`)
-      .concat(CLIENTE ? [] : ps.filter(p => p.grab === s).map(p => `<span class="chip grab" style="border-color:${marcaDe(p.marca).color}" title="Grabación · ${esc(p.titulo)}" onclick="verPieza('${p.id}')">🎥 ${esc(p.titulo)}</span>`));
-    html += `<div class="dia ${d.getMonth() !== planMes.getMonth() ? 'fuera' : ''} ${s === hoy ? 'hoy' : ''}"><div class="n">${d.getDate()}</div>${chips.join('')}</div>`;
+      .map(p => `<span class="chip ${p.adicional ? 'es-adic' : ''} ${activa(p) ? '' : 'inactiva'}" style="background:${colorPieza(p)}${franjaPauta(p)}" title="${esc(p.titulo)}${p.adicional ? ' · ADICIONAL' : ''}${p.uso && p.uso !== 'Orgánico' ? ' · ' + esc(p.uso).toUpperCase() : ''}" onclick="event.stopPropagation();verPieza('${p.id}')">${miniUrl(p) ? `<img class="chip-img" src="${miniUrl(p)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<b>${p.hora ? hora12(p.hora).replace(' ', '').replace('. m.', '') : ''}</b>${esc(p.titulo)}</span>`)
+      .concat(CLIENTE ? [] : ps.filter(p => p.grab === s).map(p => `<span class="chip grab" style="border-color:${marcaDe(p.marca).color}" title="Grabación · ${esc(p.titulo)}" onclick="event.stopPropagation();verPieza('${p.id}')">🎥 ${esc(p.titulo)}</span>`));
+    html += `<div class="dia ${d.getMonth() !== planMes.getMonth() ? 'fuera' : ''} ${s === hoy ? 'hoy' : ''} ${CLIENTE ? '' : 'clic'}" ${CLIENTE ? '' : `onclick="elegirDia('${s}')" title="Clic para programar una publicación este día"`}><div class="n">${d.getDate()}</div>${chips.join('')}</div>`;
   }
   return html + `</div><div class="leyenda"><span>■ Orgánico (color de la marca)</span><span><span style="color:${COLOR_PAUTA}">■</span> Pauta</span><span><span style="border-left:4px solid ${COLOR_PAUTA};padding-left:4px">■</span> Orgánico + pauta</span><span class="solo-equipo">⬚ Grabación</span></div>`;
+}
+
+// Clic en un día del calendario: asignar una pieza sin fecha o crear una nueva
+let diaSel = null;
+function elegirDia(s) {
+  if (CLIENTE) return;
+  diaSel = s;
+  const d = fecha(s), marca = ruta.marca;
+  $('dTitulo').textContent = `Publicar el ${DIAS[d.getDay()].toLowerCase()} ${fCorta(s)}`;
+  $('dHora').value = '';
+  const sinFecha = db.piezas.filter(p => p.marca === marca && !p.pub && activa(p) && p.estado !== 'publicada')
+    .sort((a, b) => (proyDe(a.proyecto)?.nombre || '').localeCompare(proyDe(b.proyecto)?.nombre || '') || a.titulo.localeCompare(b.titulo));
+  $('dLista').innerHTML = sinFecha.length ? sinFecha.map(p => {
+    const f = FORMATOS[p.formato] || FORMATOS.reel, pr = proyDe(p.proyecto);
+    return `<button type="button" class="dia-item" onclick="asignarDia('${p.id}')">
+      <span class="di-mini">${miniUrl(p) ? `<img src="${miniUrl(p)}" alt="" loading="lazy" onerror="this.replaceWith('${f[0]}')">` : f[0]}</span>
+      <span class="di-t"><b>${esc(p.titulo)}</b><small>${f[1]}${pr ? ' · ' + esc(pr.nombre) : ''}${p.adicional ? ' · Adicional' : ''}</small></span>
+      ${chipEstado(p.estado)}<span class="di-go">Programar aquí →</span></button>`;
+  }).join('') : '<div class="vacio" style="padding:14px">Todas las piezas de esta marca ya tienen fecha. Crea una nueva con el botón de abajo.</div>';
+  $('mDia').classList.add('on');
+}
+function asignarDia(id) {
+  const p = db.piezas.find(x => x.id === id);
+  p.pub = diaSel;
+  if ($('dHora').value) p.hora = $('dHora').value;
+  cerrar('mDia'); guardar(); toast(`“${p.titulo}” quedó para el ${fCorta(diaSel)}`);
+}
+function nuevaEnDia() {
+  const h = $('dHora').value;
+  cerrar('mDia');
+  abrirPieza(null, ruta.marca);
+  $('pPub').value = diaSel;
+  if (h) $('pHora').value = h;
 }
 
 // ─── Parrilla (proyectos de la marca) ───
@@ -1212,13 +1276,14 @@ function tablaParrilla(piezas) {
 function bloqueProyecto(pr, piezas) {
   const delPlan = piezas.filter(p => !p.adicional && activa(p)), nAdic = piezas.filter(p => p.adicional && activa(p)).length;
   const listas = delPlan.filter(p => LISTAS.includes(p.estado)).length;
-  const total = Math.max(delPlan.length, +pr.cupo || 0);
+  const nInact = piezas.filter(p => !p.adicional && !activa(p)).length;
+  const total = Math.max(delPlan.length, cupoNeto(pr.cupo, piezas));
   const pct = total ? Math.round(listas / total * 100) : 0;
   return `<div class="subgrp ${abiertosProy.has(pr.id) ? 'open' : ''}">
     <div class="subgrp-head" onclick="abiertosProy.has('${pr.id}')?abiertosProy.delete('${pr.id}'):abiertosProy.add('${pr.id}');render()">
       <div class="subgrp-ic">${TIPO_IC[pr.tipo] || '📁'}</div>
       <div class="subgrp-info"><h4>${esc(pr.nombre)} ${pr.suelto ? '' : `<span class="estado ${pr.estado === 'cerrado' ? 'e-idea' : 'e-aprobada'}">${pr.estado === 'cerrado' ? 'Cerrado' : 'Activo'}</span>`}</h4>
-        <p>${esc(pr.tipo)} · ${listas} de ${total} pieza${total === 1 ? '' : 's'} del plan lista${total === 1 ? '' : 's'}${nAdic ? ` · <span class="adic">+${nAdic} adicional${nAdic === 1 ? '' : 'es'}</span>` : ''}</p>
+        <p>${esc(pr.tipo)} · ${listas} de ${total} pieza${total === 1 ? '' : 's'} del plan lista${total === 1 ? '' : 's'}${nInact ? ' · ' + INACTIVAS.map(e => { const n = piezas.filter(p => !p.adicional && p.estado === e).length; return n ? `<span class="motivo" style="display:inline;padding:1px 7px">${n} ${e}${n === 1 ? '' : 's'}</span>` : ''; }).filter(Boolean).join(' ') : ''}${nAdic ? ` · <span class="adic">+${nAdic} adicional${nAdic === 1 ? '' : 'es'}</span>` : ''}</p>
         <div class="barra"><i style="width:${pct}%"></i></div></div>
       <span class="chevron">⌄</span>
     </div>

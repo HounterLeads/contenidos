@@ -255,6 +255,7 @@
   .dia-item .di-mini{width:40px;height:50px;border-radius:8px;overflow:hidden;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
   .dia-item .di-mini img{width:100%;height:100%;object-fit:cover}
   .dia-item .di-go{font-size:.78rem;font-weight:700;color:var(--peri);white-space:nowrap}
+  .acc-equipo{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px;padding:10px;background:#F6F6FF;border:1px solid var(--line);border-radius:12px}
   .leyenda{display:flex;gap:16px;flex-wrap:wrap;font-size:.78rem;color:var(--muted);margin-top:14px}
 
   /* TAREAS (lista tipo ClickUp) */
@@ -555,7 +556,8 @@
     </div>
     <div class="campo"><label>Referencia (link)</label><input id="pRef" placeholder="https://"></div>
     <div class="modal-acc">
-      <button class="btn danger" id="pBorrar" onclick="borrarPieza()">Eliminar</button>
+      <button class="btn danger" id="pBorrar" onclick="borrarPieza()">Eliminar pieza</button>
+      <button class="btn ghost" id="pQuitar" onclick="quitarDelPlan(editPieza, true)">🗓 Quitar del planificador</button>
       <span class="sp"></span>
       <button class="btn ghost" onclick="cerrar('mPieza')">Cancelar</button>
       <button class="btn" onclick="guardarPieza()">Guardar</button>
@@ -585,6 +587,11 @@
     <div class="ver-grid">
       <div class="ver-media" id="vMedia"></div>
       <div>
+        <div class="acc-equipo solo-equipo">
+          <button class="btn sm" onclick="cerrar('mVer');abrirPieza(verId)">✎ Modificar</button>
+          <button class="btn sm ghost" id="vQuitar" onclick="quitarDelPlan(verId)">🗓 Quitar del planificador</button>
+          <button class="btn sm ghost" style="color:#B42318" onclick="eliminarPieza(verId)">🗑 Eliminar pieza</button>
+        </div>
         <div class="post-top" id="vTop"></div>
         <h2 id="vTitulo"></h2>
         <p class="sub" id="vCuando"></p>
@@ -596,7 +603,7 @@
           <a class="btn ghost" id="vDrive" target="_blank" rel="noopener">Abrir en Drive ↗</a>
           <button class="btn ghost" onclick="copiarCopy()">📋 Copiar copy</button>
           <span class="sp"></span>
-          <button class="btn solo-equipo" onclick="cerrar('mVer');abrirPieza(verId)">✎ Editar</button>
+          <button class="btn solo-equipo" onclick="cerrar('mVer');abrirPieza(verId)">✎ Modificar</button>
           <button class="btn ghost" onclick="cerrar('mVer')">Cerrar</button>
         </div>
       </div>
@@ -1203,7 +1210,8 @@ function agenda(piezas) {
         ${largo ? `<button class="mas" onclick="this.previousElementSibling.classList.toggle('abierto');this.textContent=this.textContent==='Ver copy completo'?'Ver menos':'Ver copy completo'">Ver copy completo</button>` : ''}
         <div class="post-acc">
           ${p.final ? `<button class="btn sm" onclick="verPieza('${p.id}')">▶ Ver pieza</button>` : '<span class="sin-drive">La pieza aún no está en Drive</span>'}
-          <button class="btn sm ghost solo-equipo" onclick="abrirPieza('${p.id}')">✎ Editar</button>
+          <button class="btn sm ghost solo-equipo" onclick="abrirPieza('${p.id}')">✎ Modificar</button>
+          <button class="btn sm ghost solo-equipo" onclick="quitarDelPlan('${p.id}')">🗓 Quitar del planificador</button>
         </div>
       </div>
       <div class="post-mini" ${p.final ? `onclick="verPieza('${p.id}')" style="cursor:pointer"` : ''}>${miniUrl(p) ? `<img src="${miniUrl(p)}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.replaceWith('${f[0]}')">` : f[0]}</div>
@@ -1903,6 +1911,7 @@ function verPieza(id) {
   ].filter(Boolean).join('');
   pintarTiempos(p);
   pintarResultados(p);
+  $('vQuitar').hidden = !p.pub;
   $('vDrive').style.display = p.final ? '' : 'none';
   $('vDrive').href = p.final || '#';
   $('panelCampana').hidden = true;
@@ -1934,6 +1943,7 @@ function abrirPieza(id, marca, proyecto) {
   $('responsables').innerHTML = responsables().map(r => `<option value="${esc(r)}">`).join('');
   $('mpTitulo').textContent = id ? 'Editar pieza' : 'Nueva pieza';
   $('pBorrar').style.display = id ? '' : 'none';
+  $('pQuitar').style.display = id && p.pub ? '' : 'none';
   $('pAdic').checked = !!p.adicional; $('pUso').value = p.uso || 'Orgánico';
   const campos = { pTitulo: 'titulo', pMarca: 'marca', pFormato: 'formato', pEstado: 'estado', pResp: 'resp', pGrab: 'grab', pSol: 'solicitada', pPub: 'pub', pHora: 'hora', pRed: 'red', pGuion: 'guion', pCopy: 'copy', pRef: 'ref', pFinal: 'final', pNotas: 'notas', pMotivo: 'motivo' };
   Object.entries(campos).forEach(([el, k]) => $(el).value = p[k] || '');
@@ -1957,8 +1967,21 @@ function guardarPieza() {
   if (datos.proyecto) abiertosProy.add(datos.proyecto);
   cerrar('mPieza'); guardar(); toast('Pieza guardada');
 }
+// Quita la pieza del planificador (borra fecha y hora) sin eliminarla: sigue en la parrilla, lista para reprogramar
+function quitarDelPlan(id, desdeModal) {
+  const p = db.piezas.find(x => x.id === id);
+  if (!p || !confirm(`¿Quitar “${p.titulo}” del planificador?\n\nLa pieza NO se borra: queda en la parrilla sin fecha y la puedes volver a programar dándole clic a un día del calendario.`)) return;
+  p.pub = ''; p.hora = '';
+  cerrar(desdeModal ? 'mPieza' : 'mVer'); guardar(); toast('Quitada del planificador. Sigue en la parrilla sin fecha.');
+}
+function eliminarPieza(id) {
+  const p = db.piezas.find(x => x.id === id);
+  if (!p || !confirm(`¿Eliminar “${p.titulo}” por completo?\n\nSe borra de la parrilla y del planificador. Si solo quieres cambiarle la fecha, usa “Quitar del planificador”.`)) return;
+  db.piezas = db.piezas.filter(x => x.id !== id);
+  cerrar('mVer'); guardar(); toast('Pieza eliminada');
+}
 function borrarPieza() {
-  if (!confirm('¿Eliminar esta pieza?')) return;
+  if (!confirm('¿Eliminar esta pieza por completo?\n\nSe borra de la parrilla y del planificador. Si solo quieres cambiarle la fecha, usa “Quitar del planificador”.')) return;
   db.piezas = db.piezas.filter(x => x.id !== editPieza);
   cerrar('mPieza'); guardar(); toast('Pieza eliminada');
 }

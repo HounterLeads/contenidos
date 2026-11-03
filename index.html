@@ -372,6 +372,25 @@
   .resultado div{background:var(--bg);border-radius:10px;padding:8px 10px}
   .resultado b{display:block;font-family:'Bricolage Grotesque',sans-serif;font-size:1.1rem}
   .resultado span{font-size:.7rem;color:var(--muted)}
+
+  /* Público e insights (histórico) */
+  .ins-sec{margin-top:26px}
+  .ins-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .ins-head h2{font-family:'Bricolage Grotesque',sans-serif;font-size:1.35rem;font-weight:800}
+  .ins-head span{font-size:.78rem;color:var(--muted)}
+  .reco{display:flex;flex-direction:column;gap:8px}
+  .reco div{background:var(--bg);border-radius:12px;padding:10px 14px;font-size:.88rem;line-height:1.45}
+  .cols{display:flex;align-items:flex-end;gap:3px;height:160px;padding-top:6px}
+  .cols .c{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;position:relative;min-width:0}
+  .cols .c i{width:100%;background:var(--peri);border-radius:4px 4px 0 0;min-height:2px}
+  .cols .c.top i,.cols .c:hover i{background:var(--azul)}
+  .cols .c small{font-size:.6rem;color:var(--muted);margin-top:4px;white-space:nowrap;min-height:.8rem}
+  .cols .c .tip{display:none;position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;font-size:.72rem;padding:5px 9px;border-radius:8px;white-space:nowrap;z-index:5;pointer-events:none}
+  .cols .c:hover .tip{display:block}
+  .cols .c.debil i{opacity:.3}
+  .tabs-dem{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+  .tabs-dem button{border:1px solid var(--line);background:#fff;border-radius:99px;padding:4px 12px;font-size:.78rem;cursor:pointer;font-family:inherit}
+  .tabs-dem button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
   @media(max-width:760px){.kpi-grid{grid-template-columns:1fr 1fr}.met-grid{grid-template-columns:1fr}.bar-f{grid-template-columns:80px 1fr 54px}.resultado{grid-template-columns:1fr 1fr}}
 
   /* ADICIONAL (fuera del presupuesto) */
@@ -1714,7 +1733,7 @@ function renderMetricas(m) {
   if (!xs.length) {
     $('contenido').innerHTML = `<section class="sec"><div class="wrap">${encabezado}
       <div class="vacio">Aún no hay métricas de ${nombreMes(planMes).toLowerCase()}.${CLIENTE ? '' : `<br><br><b>Cómo cargarlas:</b> en Meta Business Suite ve a <b>Estadísticas → Contenido</b>, elige el mes y descarga el archivo con <b>Exportar datos (CSV)</b>. Luego súbelo con “⬆ Importar CSV de Meta”. Cada publicación se une sola con su pieza por la fecha.`}</div>
-      ${pub ? panelPublicos(pub, m) : ''}</div></section>`;
+      ${pub ? panelPublicos(pub, m) : ''}${insightsHtml(m)}</div></section>`;
     return;
   }
   const orden = xs.slice().sort((a, b) => tasa(b) - tasa(a));
@@ -1745,7 +1764,8 @@ function renderMetricas(m) {
         <td class="n">${num(x.alcance)}</td><td class="n col-opc">${num(x.vistas)}</td><td class="n">${num(interacciones(x))}</td><td class="n"><b>${pct(tasa(x))}</b></td>
         <td class="n col-opc">${num(x.guardados)}</td><td class="n col-opc">${num(x.compartidos)}</td><td class="n col-opc">${num(x.seguidores)}</td></tr>`; }).join('')}
       </tbody></table></div></div>
-    ${pub ? panelPublicos(pub, m) : (CLIENTE ? '' : `<div class="vacio">Agrega los datos de <b>públicos</b> (edad, género, ciudades y horas activas) con “👥 Públicos”. Están en Meta Business Suite → Estadísticas → Público.</div>`)}
+    ${pub ? panelPublicos(pub, m) : (CLIENTE || m.insights ? '' : `<div class="vacio">Agrega los datos de <b>públicos</b> (edad, género, ciudades y horas activas) con “👥 Públicos”. Están en Meta Business Suite → Estadísticas → Público.</div>`)}
+    ${insightsHtml(m)}
   </div></section>`;
 }
 function parseLista(t) { return (t || '').split(/\n|,/).map(l => l.split(':')).filter(a => a.length === 2 && a[0].trim()).map(([k, v]) => ({ lab: k.trim(), v: parseFloat(v.replace('%', '').replace(',', '.')) || 0 })); }
@@ -1761,6 +1781,77 @@ function panelPublicos(pub, m) {
       <div>${edades.length ? '<h3 style="font-size:.95rem;margin-bottom:10px">Edad</h3>' + barras(edades, pct) : ''}</div>
       <div>${ciudades.length ? '<h3 style="font-size:.95rem;margin-bottom:10px">Ciudades principales</h3>' + barras(ciudades, pct) : ''}</div>
     </div></div>`;
+}
+
+// ─── Público e insights: histórico de todas las publicaciones + datos de público de Meta ───
+let demVista = 'seg';
+const PAISES = { CO: 'Colombia', US: 'Estados Unidos', ES: 'España', MX: 'México', VE: 'Venezuela', AR: 'Argentina', EC: 'Ecuador', PE: 'Perú', CL: 'Chile', PA: 'Panamá', CA: 'Canadá', DE: 'Alemania' };
+function columnas(vals, etiqueta, tip, debil) {
+  debil = debil || (() => false);
+  const max = Math.max(...vals, 0) || 1, ok = vals.map((v, i) => debil(i) ? -1 : v), top = ok.indexOf(Math.max(...ok));
+  return `<div class="cols">${vals.map((v, i) => `<div class="c ${i === top ? 'top' : ''} ${debil(i) ? 'debil' : ''}"><span class="tip">${tip(v, i)}</span><i style="height:${v / max * 100}%"></i><small>${etiqueta(i)}</small></div>`).join('')}</div>`;
+}
+const hCorta = h => (h % 12 || 12) + (h < 12 ? 'a' : 'p');
+const hh = h => hora12(String(h % 24).padStart(2, '0') + ':00');
+const pctDe = (obj, total) => { const t = total || Object.values(obj || {}).reduce((s, v) => s + v, 0) || 1; return Object.entries(obj || {}).map(([k, v]) => ({ lab: PAISES[k] || k, v: v / t * 100, n: v })); };
+function insightsHtml(m) {
+  const I = m.insights || null, todas = (m.metricas || []).filter(x => x.fecha);
+  if (!I && todas.length < 5) return '';
+  const vis = x => +x.alcance || 0, prom = l => { if (!l.length) return 0; const v = l.map(vis).sort((a, b) => a - b), k = v.length >> 1; return v.length % 2 ? v[k] : (v[k - 1] + v[k]) / 2; };
+  const plural = d => d.endsWith('s') ? d : d + 's';
+  let html = `<div class="ins-sec"><div class="ins-head"><h2>🔭 Público e insights</h2><span>Histórico de ${todas.length} publicaciones${I ? ' · datos de Meta al ' + fLarga(I.act) : ''}</span></div>`;
+  // Franjas de 2 horas (hora Colombia) con el alcance típico (mediana)
+  const fr = Array.from({ length: 12 }, (_, i) => todas.filter(x => x.hora && Math.floor(+x.hora.split(':')[0] / 2) === i));
+  const frOk = fr.map((l, i) => ({ i, n: l.length, v: prom(l) })).filter(f => f.n >= 8).sort((a, b) => b.v - a.v);
+  const agrupa = clave => { const g = {}; todas.forEach(x => { const k = clave(x); if (k) (g[k] = g[k] || []).push(x); }); return Object.entries(g).map(([k, l]) => ({ k, n: l.length, v: prom(l) })).sort((a, b) => b.v - a.v); };
+  const porDia = agrupa(x => DIAS[fecha(x.fecha).getDay()]), porTipo = agrupa(x => TIPO_MET[x.tipo]);
+  const reco = [];
+  if (I && I.online && I.online.some(Boolean)) {
+    const mx = Math.max(...I.online), pico = I.online.map((v, h) => v >= mx * 0.95 ? h : -1).filter(h => h >= 0);
+    reco.push(`🟢 Los seguidores están más conectados entre las <b>${hh(pico[0])}</b> y las <b>${hh(pico[pico.length - 1] + 1)}</b> (hasta ${num(mx)} conectados a la vez).`);
+  }
+  if (frOk.length) { const b = frOk[0]; reco.push(`⏰ Lo que se publica entre las <b>${hh(b.i * 2)} y las ${hh(b.i * 2 + 2)}</b> llega a más personas: ${num(b.v)} cuentas alcanzadas en una publicación típica (${b.n} publicaciones).`); }
+  if (porDia.length > 2) reco.push(`📅 Los <b>${plural(porDia[0].k)}</b> son el mejor día: ${num(porDia[0].v)} cuentas alcanzadas en una publicación típica, frente a ${num(porDia[porDia.length - 1].v)} los ${plural(porDia[porDia.length - 1].k)}.`);
+  if (porTipo.length > 1) reco.push(`🎬 El formato que llega a más personas es <b>${porTipo[0].k.toLowerCase()}</b>: ${num(porTipo[0].v)} cuentas alcanzadas en una publicación típica, frente a ${num(porTipo[porTipo.length - 1].v)} de ${porTipo[porTipo.length - 1].k.toLowerCase()}.`);
+  if (I && I.seg && I.seg.ciudad) { const c = pctDe(I.seg.ciudad, I.seguidores).sort((a, b) => b.n - a.n)[0]; if (c) reco.push(`📍 <b>${esc(c.lab)}</b> concentra el ${pct(c.n / I.seguidores * 100)} de los seguidores.`); }
+  if (reco.length) html += `<div class="panel" style="margin-bottom:16px"><h3>💡 Lo que dicen los datos</h3><p class="ayuda">Sale del histórico completo de la cuenta</p><div class="reco">${reco.map(t => `<div>${t}</div>`).join('')}</div></div>`;
+  if (I) {
+    const nom = { seg: 'Seguidores', alc: 'Personas alcanzadas', inter: 'Personas que interactúan' }, vista = I[demVista] ? demVista : 'seg', D = I[vista];
+    const totV = Object.values(D.genero || {}).reduce((s, v) => s + v, 0) || 0;
+    const gen = pctDe(D.genero), muj = gen.find(g => g.lab === 'Mujeres'), edades = pctDe(D.edad).sort((a, b) => a.lab.localeCompare(b.lab, 'es', { numeric: true })), eTop = edades.slice().sort((a, b) => b.v - a.v)[0];
+    html += `<div class="panel" style="margin-bottom:16px"><h3>👥 ¿Quién nos ve?</h3><p class="ayuda">${vista === 'seg' ? 'Personas que siguen la cuenta' : vista === 'alc' ? 'Personas a las que les llegó el contenido este mes (incluye pauta)' : 'Personas que dieron me gusta, comentaron, guardaron o compartieron este mes'}</p>
+      <div class="tabs-dem">${Object.entries(nom).filter(([k]) => I[k]).map(([k, v]) => `<button class="${k === vista ? 'on' : ''}" onclick="demVista='${k}';render()">${v}</button>`).join('')}</div>
+      <div class="kpi-grid">
+        <div class="kpi2"><b>${vista === 'seg' ? num(I.seguidores) : num(Object.values(D.genero || {}).reduce((s, v) => s + v, 0))}</b><span>${nom[vista].toLowerCase()}</span></div>
+        <div class="kpi2"><b>${muj ? pct(muj.v) : '—'}</b><span>son mujeres</span></div>
+        <div class="kpi2"><b>${eTop ? eTop.lab : '—'}</b><span>edad principal${eTop ? ' · ' + pct(eTop.v) : ''}</span></div></div>
+      <div class="met-grid" style="margin-bottom:0">
+        <div><h3 style="font-size:.95rem;margin-bottom:10px">Edad</h3>${barras(edades.filter(e => e.n), pct)}</div>
+        <div><h3 style="font-size:.95rem;margin-bottom:10px">Ciudades principales <small style="font-weight:400;color:var(--muted)">· % del total</small></h3>${barras(pctDe(D.ciudad, totV).sort((a, b) => b.v - a.v).slice(0, 8), pct)}</div>
+        <div><h3 style="font-size:.95rem;margin:6px 0 10px">Género</h3>${barras(gen.sort((a, b) => b.v - a.v), pct)}</div>
+        <div><h3 style="font-size:.95rem;margin:6px 0 10px">Países</h3>${barras(pctDe(D.pais, totV).sort((a, b) => b.v - a.v).slice(0, 5), pct)}</div>
+      </div></div>`;
+    if (I.online && I.online.some(Boolean)) html += `<div class="panel" style="margin-bottom:16px"><h3>🟢 ¿A qué hora están conectados los seguidores?</h3><p class="ayuda">Promedio de seguidores conectados en cada hora del día (hora Colombia, últimos 30 días) · pasa el cursor por cada barra</p>
+      ${columnas(I.online, h => h % 3 === 0 ? hCorta(h) : '', (v, h) => `${hh(h)}: ${num(v)} conectados`)}</div>`;
+  }
+  if (todas.length >= 5) {
+    html += `<div class="panel" style="margin-bottom:16px"><h3>⏰ Horarios que llegan a más personas</h3><p class="ayuda">Alcance de una publicación típica (mediana) según la hora en que salió (franjas de 2 horas, hora Colombia) · en tono claro, las franjas con menos de 8 publicaciones: todavía no son confiables</p>
+      ${columnas(fr.map(prom), i => hCorta(i * 2), (v, i) => `${hh(i * 2)} a ${hh(i * 2 + 2)}: ${num(v)} de alcance típico · ${fr[i].length} ${fr[i].length === 1 ? 'publicación' : 'publicaciones'}`, i => fr[i].length < 8)}</div>
+    <div class="met-grid">
+      <div class="panel"><h3>Alcance por día</h3><p class="ayuda">Alcance de una publicación típica (mediana) según el día en que salió</p>
+        ${barras(porDia.map(g => ({ lab: g.k[0].toUpperCase() + g.k.slice(1), v: g.v, tip: `${g.k}: ${num(g.v)} de alcance típico · ${g.n} publicaciones` })), num)}</div>
+      <div class="panel"><h3>Alcance por formato</h3><p class="ayuda">Alcance de una publicación típica (mediana)</p>
+        ${barras(porTipo.map(g => ({ lab: g.k, v: g.v, tip: `${g.k}: ${num(g.v)} de alcance típico · ${g.n} publicaciones` })), num)}</div>
+    </div>`;
+    const meses = [...new Set(todas.map(x => x.fecha.slice(0, 7)))].sort().slice(-12);
+    const vm = meses.map(ms => todas.filter(x => x.fecha.startsWith(ms)).reduce((s, x) => s + vis(x), 0));
+    html += `<div class="panel" style="margin-bottom:16px"><h3>📈 Alcance por mes</h3><p class="ayuda">Suma del alcance de lo publicado cada mes (últimos 12 meses)</p>
+      ${columnas(vm, i => nombreMes(fecha(meses[i] + '-01')).slice(0, 3), (v, i) => `${nombreMes(fecha(meses[i] + '-01'), true)}: ${num(v)} · ${todas.filter(x => x.fecha.startsWith(meses[i])).length} publicaciones`)}</div>`;
+    const top = todas.slice().sort((a, b) => vis(b) - vis(a)).slice(0, 5);
+    html += `<div class="panel" style="margin-bottom:16px"><h3>🏆 Las 5 publicaciones que llegaron a más personas</h3><p class="ayuda">De todo el histórico · clic para abrirla en Instagram</p>
+      <table class="tabla met-tabla"><tbody>${top.map((x, i) => `<tr ${x.link ? `onclick="window.open('${esc(x.link)}','_blank')"` : ''}><td class="num">${i + 1}</td><td><div class="tit">${esc(nombreMet(x))}</div><div class="fecha">${TIPO_MET[x.tipo] || 'Publicación'} · ${fLarga(x.fecha)} ${x.fecha.slice(0, 4)}${x.hora ? ' · ' + hora12(x.hora) : ''}</div></td><td class="n"><b>${num(x.alcance)}</b><br><small>alcance</small></td><td class="n col-opc">${num(x.vistas)}<br><small>vistas</small></td></tr>`).join('')}</tbody></table></div>`;
+  }
+  return html + '</div>';
 }
 function pintarResultados(p) {
   const m = marcaDe(p.marca), x = (m.metricas || []).find(r => r.pieza === p.id);

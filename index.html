@@ -1708,8 +1708,10 @@ function oportunidades(m, xs, ant) {
   if (bajas.length) out.push({ ic: '🔎', txt: `<b>${bajas.length} ${bajas.length === 1 ? 'publicación quedó' : 'publicaciones quedaron'}</b> por debajo de la mitad del promedio: ${bajas.slice(0, 3).map(x => '“' + esc(nombreMet(x)) + '”').join(', ')}. Revisa el gancho de los primeros segundos y el texto de portada.` });
   const g = xs.reduce((s, x) => s + (+x.guardados || 0), 0), c = xs.reduce((s, x) => s + (+x.compartidos || 0), 0), l = xs.reduce((s, x) => s + (+x.likes || 0), 0);
   if (l && (g + c) / l < 0.05) out.push({ ic: '💾', txt: 'Se guarda y se comparte poco frente a los me gusta. Contenido útil (tips, listas, precios, “guárdalo para después”) sube los guardados, que son la señal que más empuja el alcance.' });
-  const plan = +m.cupo || 0;
-  if (plan && xs.length < plan) out.push({ ic: '📌', txt: `Se midieron <b>${xs.length} de ${plan}</b> publicaciones del plan este mes. Completa las que faltan para que la lectura sea justa.` });
+  // Piezas orgánicas del plan con fecha este mes que no tienen métricas (las de solo pauta se miden en Ads, no en el perfil)
+  const mesX = (xs[0] || {}).fecha ? xs[0].fecha.slice(0, 7) : '';
+  const sinMed = db.piezas.filter(p => p.marca === m.id && p.pub && p.pub.startsWith(mesX) && p.uso !== 'Pauta' && p.formato !== 'historia' && ['publicada', 'programada'].includes(p.estado) && !(m.metricas || []).some(x => x.pieza === p.id));
+  if (!CLIENTE && sinMed.length) out.push({ ic: '📌', txt: `${sinMed.length === 1 ? 'Una pieza orgánica publicada' : sinMed.length + ' piezas orgánicas publicadas'} este mes no ${sinMed.length === 1 ? 'aparece' : 'aparecen'} en el feed de Instagram: ${sinMed.slice(0, 3).map(p => '“' + esc(p.titulo) + '”').join(', ')}. Revisa si salió con otra fecha o si se publicó solo en historias.` });
   if (ant.length) {
     const aA = ant.reduce((s, x) => s + (+x.alcance || 0), 0) / ant.length, aH = xs.reduce((s, x) => s + (+x.alcance || 0), 0) / xs.length;
     if (aH < aA * 0.85) out.push({ ic: '📉', txt: `El alcance promedio por publicación bajó ${pct((aA - aH) / aA * 100)} frente al mes anterior. Revisa frecuencia, horarios y si se repitieron formatos.` });
@@ -1721,7 +1723,8 @@ function nombreMet(x) { const pz = x.pieza && db.piezas.find(p => p.id === x.pie
 function renderMetricas(m) {
   const mes = mesRef(), xs = metricasMes(m, mes), ant = metricasMes(m, mesAnterior(mes));
   const suma = (l, k) => l.reduce((s, x) => s + (+x[k] || 0), 0);
-  const tot = l => ({ alcance: suma(l, 'alcance'), vistas: suma(l, 'vistas'), inter: l.reduce((s, x) => s + interacciones(x), 0), seg: suma(l, 'seguidores'), tasa: l.length ? l.reduce((s, x) => s + tasa(x), 0) / l.length : 0, n: l.length });
+  const conSeg = l => l.filter(x => x.seguidores != null);
+  const tot = l => ({ alcance: suma(l, 'alcance'), vistas: suma(l, 'vistas'), inter: l.reduce((s, x) => s + interacciones(x), 0), seg: suma(l, 'seguidores'), nSeg: conSeg(l).length, tasa: l.length ? l.reduce((s, x) => s + tasa(x), 0) / l.length : 0, n: l.length });
   const T = tot(xs), A = tot(ant);
   const pub = (m.publicos || {})[mes] || (m.publicos || {})[Object.keys(m.publicos || {}).sort().pop()];
   const encabezado = `<div class="toolbar"><div class="sec-label" style="flex:1;margin:0">Métricas · ${nombreMes(planMes, true)}</div>
@@ -1746,8 +1749,8 @@ function renderMetricas(m) {
       <div class="kpi2"><b>${num(T.vistas)}</b><span>visualizaciones</span>${variacion(T.vistas, A.vistas)}</div>
       <div class="kpi2"><b>${num(T.inter)}</b><span>interacciones: me gusta, comentarios, compartidos y guardados</span>${variacion(T.inter, A.inter)}</div>
       <div class="kpi2"><b>${pct(T.tasa)}</b><span>tasa de interacción promedio (interacciones ÷ alcance)</span>${variacion(T.tasa, A.tasa)}</div>
-      <div class="kpi2"><b>${num(T.seg)}</b><span>seguidores ganados desde las publicaciones</span>${variacion(T.seg, A.seg)}</div>
-      <div class="kpi2"><b>${T.n}${m.cupo ? ' <small style="font-size:1rem;color:var(--muted)">/ ' + m.cupo + '</small>' : ''}</b><span>publicaciones medidas</span></div>
+      <div class="kpi2"><b>${T.nSeg ? num(T.seg) : '—'}</b><span>seguidores ganados desde las publicaciones${T.nSeg < T.n ? ` · Meta solo lo entrega para carruseles y posts (${T.nSeg} de ${T.n})` : ''}</span>${T.nSeg && A.nSeg ? variacion(T.seg, A.seg) : ''}</div>
+      <div class="kpi2"><b>${T.n}</b><span>publicaciones en el feed este mes${xs.some(x => x.pauta) ? ` · ${xs.filter(x => x.pauta).length} también se pautaron` : ''}</span></div>
     </div>
     <div class="panel" style="margin-bottom:16px"><h3>💡 Oportunidades de mejora</h3><p class="ayuda">Salen de comparar las publicaciones del mes entre sí y con el mes anterior.</p>
       <div class="oport">${ops.length ? ops.map(o => `<div class="op"><span class="oi">${o.ic}</span><div>${o.txt}</div></div>`).join('') : '<div class="op"><span class="oi">✓</span><div>Con estos datos no aparecen alertas. Con más publicaciones medidas, la lectura es más precisa.</div></div>'}</div></div>
@@ -1762,7 +1765,7 @@ function renderMetricas(m) {
       ${orden.map(x => { const pz = x.pieza && db.piezas.find(p => p.id === x.pieza); return `<tr ${pz ? `onclick="verPieza('${pz.id}')"` : !CLIENTE ? `onclick="abrirMetrica('${x.id}')"` : ''}>
         <td><div class="pieza-cel">${pz ? thumb(pz) : `<span class="thumb">${(FORMATOS[x.tipo] || FORMATOS.reel)[0]}</span>`}<div><div class="tit">${esc(nombreMet(x))}</div><div class="fecha">${TIPO_MET[x.tipo] || 'Publicación'} · ${fLarga(x.fecha)}${x.hora ? ' · ' + hora12(x.hora) : ''}${!pz && !CLIENTE ? ' · <span class="tarde" style="color:var(--muted)">sin pieza vinculada</span>' : ''}</div></div></div></td>
         <td class="n">${num(x.alcance)}</td><td class="n col-opc">${num(x.vistas)}</td><td class="n">${num(interacciones(x))}</td><td class="n"><b>${pct(tasa(x))}</b></td>
-        <td class="n col-opc">${num(x.guardados)}</td><td class="n col-opc">${num(x.compartidos)}</td><td class="n col-opc">${num(x.seguidores)}</td></tr>`; }).join('')}
+        <td class="n col-opc">${num(x.guardados)}</td><td class="n col-opc">${num(x.compartidos)}</td><td class="n col-opc">${x.seguidores == null ? '<span title="Meta no entrega este dato para reels">—</span>' : num(x.seguidores)}</td></tr>`; }).join('')}
       </tbody></table></div></div>
     ${pub ? panelPublicos(pub, m) : (CLIENTE || m.insights ? '' : `<div class="vacio">Agrega los datos de <b>públicos</b> (edad, género, ciudades y horas activas) con “👥 Públicos”. Están en Meta Business Suite → Estadísticas → Público.</div>`)}
     ${insightsHtml(m)}
@@ -1795,11 +1798,12 @@ const hCorta = h => (h % 12 || 12) + (h < 12 ? 'a' : 'p');
 const hh = h => hora12(String(h % 24).padStart(2, '0') + ':00');
 const pctDe = (obj, total) => { const t = total || Object.values(obj || {}).reduce((s, v) => s + v, 0) || 1; return Object.entries(obj || {}).map(([k, v]) => ({ lab: PAISES[k] || k, v: v / t * 100, n: v })); };
 function insightsHtml(m) {
-  const I = m.insights || null, todas = (m.metricas || []).filter(x => x.fecha);
+  // Solo orgánico: las publicaciones que se usaron como anuncio (pauta: true) mezclan alcance pagado
+  const I = m.insights || null, todas = (m.metricas || []).filter(x => x.fecha && !x.pauta), nPauta = (m.metricas || []).filter(x => x.pauta).length;
   if (!I && todas.length < 5) return '';
   const vis = x => +x.alcance || 0, prom = l => { if (!l.length) return 0; const v = l.map(vis).sort((a, b) => a - b), k = v.length >> 1; return v.length % 2 ? v[k] : (v[k - 1] + v[k]) / 2; };
   const plural = d => d.endsWith('s') ? d : d + 's';
-  let html = `<div class="ins-sec"><div class="ins-head"><h2>🔭 Público e insights</h2><span>Histórico de ${todas.length} publicaciones${I ? ' · datos de Meta al ' + fLarga(I.act) : ''}</span></div>`;
+  let html = `<div class="ins-sec"><div class="ins-head"><h2>🔭 Público e insights</h2><span>Histórico de ${todas.length} publicaciones orgánicas${nPauta ? ` (sin las ${nPauta} que se pautaron)` : ''}${I ? ' · datos de Meta al ' + fLarga(I.act) : ''}</span></div>`;
   // Franjas de 2 horas (hora Colombia) con el alcance típico (mediana)
   const fr = Array.from({ length: 12 }, (_, i) => todas.filter(x => x.hora && Math.floor(+x.hora.split(':')[0] / 2) === i));
   const frOk = fr.map((l, i) => ({ i, n: l.length, v: prom(l) })).filter(f => f.n >= 8).sort((a, b) => b.v - a.v);
@@ -1814,7 +1818,7 @@ function insightsHtml(m) {
   if (porDia.length > 2) reco.push(`📅 Los <b>${plural(porDia[0].k)}</b> son el mejor día: ${num(porDia[0].v)} cuentas alcanzadas en una publicación típica, frente a ${num(porDia[porDia.length - 1].v)} los ${plural(porDia[porDia.length - 1].k)}.`);
   if (porTipo.length > 1) reco.push(`🎬 El formato que llega a más personas es <b>${porTipo[0].k.toLowerCase()}</b>: ${num(porTipo[0].v)} cuentas alcanzadas en una publicación típica, frente a ${num(porTipo[porTipo.length - 1].v)} de ${porTipo[porTipo.length - 1].k.toLowerCase()}.`);
   if (I && I.seg && I.seg.ciudad) { const c = pctDe(I.seg.ciudad, I.seguidores).sort((a, b) => b.n - a.n)[0]; if (c) reco.push(`📍 <b>${esc(c.lab)}</b> concentra el ${pct(c.n / I.seguidores * 100)} de los seguidores.`); }
-  if (reco.length) html += `<div class="panel" style="margin-bottom:16px"><h3>💡 Lo que dicen los datos</h3><p class="ayuda">Sale del histórico completo de la cuenta</p><div class="reco">${reco.map(t => `<div>${t}</div>`).join('')}</div></div>`;
+  if (reco.length) html += `<div class="panel" style="margin-bottom:16px"><h3>💡 Lo que dicen los datos</h3><p class="ayuda">Sale del histórico orgánico de la cuenta (sin las publicaciones pautadas)</p><div class="reco">${reco.map(t => `<div>${t}</div>`).join('')}</div></div>`;
   if (I) {
     const nom = { seg: 'Seguidores', alc: 'Personas alcanzadas', inter: 'Personas que interactúan' }, vista = I[demVista] ? demVista : 'seg', D = I[vista];
     const totV = Object.values(D.genero || {}).reduce((s, v) => s + v, 0) || 0;
@@ -1845,10 +1849,10 @@ function insightsHtml(m) {
     </div>`;
     const meses = [...new Set(todas.map(x => x.fecha.slice(0, 7)))].sort().slice(-12);
     const vm = meses.map(ms => todas.filter(x => x.fecha.startsWith(ms)).reduce((s, x) => s + vis(x), 0));
-    html += `<div class="panel" style="margin-bottom:16px"><h3>📈 Alcance por mes</h3><p class="ayuda">Suma del alcance de lo publicado cada mes (últimos 12 meses)</p>
+    html += `<div class="panel" style="margin-bottom:16px"><h3>📈 Alcance orgánico por mes</h3><p class="ayuda">Suma del alcance de lo publicado cada mes, sin las publicaciones pautadas (últimos 12 meses)</p>
       ${columnas(vm, i => nombreMes(fecha(meses[i] + '-01')).slice(0, 3), (v, i) => `${nombreMes(fecha(meses[i] + '-01'), true)}: ${num(v)} · ${todas.filter(x => x.fecha.startsWith(meses[i])).length} publicaciones`)}</div>`;
     const top = todas.slice().sort((a, b) => vis(b) - vis(a)).slice(0, 5);
-    html += `<div class="panel" style="margin-bottom:16px"><h3>🏆 Las 5 publicaciones que llegaron a más personas</h3><p class="ayuda">De todo el histórico · clic para abrirla en Instagram</p>
+    html += `<div class="panel" style="margin-bottom:16px"><h3>🏆 Las 5 publicaciones orgánicas que llegaron a más personas</h3><p class="ayuda">Solo alcance orgánico: no incluye las publicaciones que se pautaron · clic para abrirla en Instagram</p>
       <table class="tabla met-tabla"><tbody>${top.map((x, i) => `<tr ${x.link ? `onclick="window.open('${esc(x.link)}','_blank')"` : ''}><td class="num">${i + 1}</td><td><div class="tit">${esc(nombreMet(x))}</div><div class="fecha">${TIPO_MET[x.tipo] || 'Publicación'} · ${fLarga(x.fecha)} ${x.fecha.slice(0, 4)}${x.hora ? ' · ' + hora12(x.hora) : ''}</div></td><td class="n"><b>${num(x.alcance)}</b><br><small>alcance</small></td><td class="n col-opc">${num(x.vistas)}<br><small>vistas</small></td></tr>`).join('')}</tbody></table></div>`;
   }
   return html + '</div>';

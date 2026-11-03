@@ -838,7 +838,9 @@ const ESTADO_CLIENTE = { idea: 'En producción', guion: 'En producción', grabac
 const INACTIVAS = ['suspendida', 'aplazada', 'cancelada'];
 function activa(p) { return !INACTIVAS.includes(p.estado); }
 // Cupo del plan descontando las piezas del plan suspendidas, aplazadas o canceladas (ej: 10 del plan, 1 suspendida → 9)
-function cupoNeto(cupo, piezas) { return Math.max(0, (+cupo || 0) - piezas.filter(p => !p.adicional && !activa(p)).length); }
+// Las historias van aparte: no suman al cupo de piezas regulares del plan
+function esHist(p) { return p.formato === 'historia'; }
+function cupoNeto(cupo, piezas) { return Math.max(0, (+cupo || 0) - piezas.filter(p => !p.adicional && !activa(p) && !esHist(p)).length); }
 function inactivasMes(marca, mes) { return db.piezas.filter(p => p.marca === marca && p.pub && p.pub.startsWith(mes)); }
 // Qué pasó con la pieza y por qué, visible para equipo y cliente
 function motivoHtml(p) { return activa(p) ? '' : `<div class="motivo"><b>${ESTADOS.find(e => e.id === p.estado).nombre}:</b> ${p.motivo ? esc(p.motivo) : 'sin motivo registrado'}</div>`; }
@@ -1014,7 +1016,7 @@ async function alCambiarSesion(user) {
       if (user.displayName) perfil.nombre = user.displayName.split(' ')[0];
       await FB.poner('usuarios', correo, perfil);
     }
-    if (!perfil) { await FB.salir(); mostrarLogin('Este correo no tiene acceso. Pídelo a Hounter Leads.'); return; }
+    if (!perfil) { await FB.salir(); mostrarLogin(`El correo ${correo || '(Google no entregó correo)'} no tiene acceso. Pídelo a Hounter Leads.`); return; }
     const usr = { id: correo, ...perfil };
     escuchas = FB.escuchar(usr, recibir, primera => {
       if (usr.rol === 'cliente' && !db.marcas.some(m => m.id === usr.marca)) { FB.salir(); mostrarLogin('Este usuario no tiene una marca asignada'); return; }
@@ -1080,7 +1082,7 @@ function mesCiclo(m) { return m.mes ? nombreMes(fecha(m.mes + '-01')) : ''; }
 
 // ═══ INICIO: centro de administración ═══
 function resumenMarca(m, mes) {
-  const ps = db.piezas.filter(p => p.marca === m.id && p.pub && p.pub.startsWith(mes) && activa(p));
+  const ps = db.piezas.filter(p => p.marca === m.id && p.pub && p.pub.startsWith(mes) && activa(p) && !esHist(p));
   const prog = ps.filter(p => PROGRAMADAS.includes(p.estado)).length;
   const plan = ps.filter(p => !p.adicional), adic = ps.length - plan.length;
   const meta = Math.max(plan.length, cupoNeto(m.cupo, inactivasMes(m.id, mes)));
@@ -1092,7 +1094,7 @@ function renderInicio() {
     <h1>Centro de administración<br>de <em>contenidos</em>.</h1>
     <p class="lead">Lo que debe quedar programado este mes, en qué etapa va cada marca y lo que necesita atención.</p>`;
   const mes = mesRef();
-  const ps = db.piezas.filter(p => p.pub && p.pub.startsWith(mes) && activa(p));
+  const ps = db.piezas.filter(p => p.pub && p.pub.startsWith(mes) && activa(p) && !esHist(p));
   const prog = ps.filter(p => PROGRAMADAS.includes(p.estado)).length;
   const meta = db.marcas.reduce((s, m) => s + Math.max(cupoNeto(m.cupo, inactivasMes(m.id, mes)), ps.filter(p => p.marca === m.id && !p.adicional).length), 0);
   const revision = db.piezas.filter(p => p.estado === 'revision').length;
@@ -1173,7 +1175,7 @@ function renderMarca() {
       <a class="navbtn ${t === 'plan' ? 'on' : ''}" href="#/marca/${m.id}/plan">📄 Plan y términos</a>
     </div>`;
   const ps = db.piezas.filter(p => p.marca === m.id);
-  const delMes = ps.filter(p => p.pub && p.pub.startsWith(mesRef()) && activa(p));
+  const delMes = ps.filter(p => p.pub && p.pub.startsWith(mesRef()) && activa(p) && !esHist(p));
   const delPlan = delMes.filter(p => !p.adicional), nAdic = delMes.length - delPlan.length;
   const prog = delPlan.filter(p => PROGRAMADAS.includes(p.estado)).length;
   const tAb = tareasVisibles(m.id).filter(x => x.estado !== 'hecha').length;
@@ -1291,10 +1293,10 @@ function nuevaEnDia() {
 }
 
 // ─── Parrilla (proyectos de la marca) ───
-function tablaParrilla(piezas) {
-  if (!piezas.length) return '<div class="vacio">Este proyecto aún no tiene piezas.</div>';
+function tablaParrilla(piezas, titulo) {
+  if (!piezas.length) return titulo ? '' : '<div class="vacio">Este proyecto aún no tiene piezas.</div>';
   const conSla = !!marcaDe(piezas[0].marca).sla;
-  return `<table class="tabla"><thead><tr><th>#</th><th>Pieza</th><th class="col-opc">Sale</th><th>Estado</th>${conSla ? '<th>Tiempos</th>' : ''}<th></th></tr></thead><tbody>
+  return `${titulo ? `<div class="sec-label" style="margin:16px 0 8px">${titulo}</div>` : ''}<table class="tabla"><thead><tr><th>#</th><th>Pieza</th><th class="col-opc">Sale</th><th>Estado</th>${conSla ? '<th>Tiempos</th>' : ''}<th></th></tr></thead><tbody>
     ${piezas.map((p, i) => { const f = FORMATOS[p.formato] || FORMATOS.reel; return `<tr class="${p.adicional ? 'es-adic' : ''}" onclick="verPieza('${p.id}')">
       <td class="num">${String(i + 1).padStart(2, '0')}</td>
       <td><div class="pieza-cel">${thumb(p)}<div><div class="tit">${esc(p.titulo)} ${p.adicional ? '<span class="adic" title="Fuera del presupuesto del plan">Adicional</span>' : ''} ${p.uso && p.uso !== 'Orgánico' ? `<span class="uso">${esc(p.uso)}</span>` : ''}</div><div class="fecha">${f[0]} ${f[1]}${p.red ? ' · ' + esc(p.red) : ''}${!CLIENTE && p.resp ? ' · 👤 ' + esc(p.resp) : ''}</div>${motivoHtml(p)}</div></div></td>
@@ -1304,7 +1306,9 @@ function tablaParrilla(piezas) {
       <td style="text-align:right;white-space:nowrap">${botonDrive(p)}${CLIENTE ? '' : `<button class="borrar-fila" title="Eliminar pieza" onclick="event.stopPropagation();eliminarPieza('${p.id}')">🗑</button>`}</td></tr>`; }).join('')}
   </tbody></table>`;
 }
-function bloqueProyecto(pr, piezas) {
+function bloqueProyecto(pr, todas) {
+  const piezas = todas.filter(p => !esHist(p)), hists = todas.filter(esHist);
+  const hAct = hists.filter(activa), hPub = hAct.filter(p => p.estado === 'publicada').length;
   const delPlan = piezas.filter(p => !p.adicional && activa(p)), nAdic = piezas.filter(p => p.adicional && activa(p)).length;
   const listas = delPlan.filter(p => LISTAS.includes(p.estado)).length;
   const nInact = piezas.filter(p => !p.adicional && !activa(p)).length;
@@ -1314,7 +1318,7 @@ function bloqueProyecto(pr, piezas) {
     <div class="subgrp-head" onclick="abiertosProy.has('${pr.id}')?abiertosProy.delete('${pr.id}'):abiertosProy.add('${pr.id}');render()">
       <div class="subgrp-ic">${TIPO_IC[pr.tipo] || '📁'}</div>
       <div class="subgrp-info"><h4>${esc(pr.nombre)} ${pr.suelto ? '' : `<span class="estado ${pr.estado === 'cerrado' ? 'e-idea' : 'e-aprobada'}">${pr.estado === 'cerrado' ? 'Cerrado' : 'Activo'}</span>`}</h4>
-        <p>${esc(pr.tipo)} · ${listas} de ${total} pieza${total === 1 ? '' : 's'} del plan lista${total === 1 ? '' : 's'}${nInact ? ' · ' + INACTIVAS.map(e => { const n = piezas.filter(p => !p.adicional && p.estado === e).length; return n ? `<span class="motivo" style="display:inline;padding:1px 7px">${n} ${e}${n === 1 ? '' : 's'}</span>` : ''; }).filter(Boolean).join(' ') : ''}${nAdic ? ` · <span class="adic">+${nAdic} adicional${nAdic === 1 ? '' : 'es'}</span>` : ''}</p>
+        <p>${esc(pr.tipo)} · ${listas} de ${total} pieza${total === 1 ? '' : 's'} del plan lista${total === 1 ? '' : 's'}${nInact ? ' · ' + INACTIVAS.map(e => { const n = piezas.filter(p => !p.adicional && p.estado === e).length; return n ? `<span class="motivo" style="display:inline;padding:1px 7px">${n} ${e}${n === 1 ? '' : 's'}</span>` : ''; }).filter(Boolean).join(' ') : ''}${nAdic ? ` · <span class="adic">+${nAdic} adicional${nAdic === 1 ? '' : 'es'}</span>` : ''}${hists.length ? ` · 📱 ${hAct.length} historia${hAct.length === 1 ? '' : 's'} aparte (${hPub} publicada${hPub === 1 ? '' : 's'})` : ''}</p>
         <div class="barra"><i style="width:${pct}%"></i></div></div>
       <span class="chevron">⌄</span>
     </div>
@@ -1325,7 +1329,7 @@ function bloqueProyecto(pr, piezas) {
         ${pr.drive ? `<a class="btn sm ghost" href="${esc(pr.drive)}" target="_blank" rel="noopener">📁 Carpeta en Drive ↗</a>` : ''}
         ${pr.suelto ? '' : `<button class="btn sm ghost solo-equipo" onclick="abrirProyecto('${pr.id}')">✎ Editar proyecto</button>`}
       </div>
-      ${tablaParrilla(piezas)}
+      ${hists.length ? tablaParrilla(piezas, '🎬 Piezas regulares del plan') + (piezas.length ? '' : '<div class="vacio">Aún no hay piezas regulares.</div>') + tablaParrilla(hists, '📱 Historias · no suman al cupo de piezas') : tablaParrilla(piezas)}
     </div></div>`;
 }
 function renderParrilla(m) {
